@@ -1,0 +1,26 @@
+@import "/node_modules/ol/ol.css";
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+html,
+body {
+    font-size: 14px;
+    margin: 0;
+    height: 100%;
+}
+
+#map {
+    position: center;
+    width: 800px;
+    height: 100%;
+    margin: 20px 20px 20px 20px;
+}
