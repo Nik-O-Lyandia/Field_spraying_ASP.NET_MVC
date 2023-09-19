@@ -1,4 +1,4 @@
-namespace Gmaps_ASP.NET_MVC_Test.Models
+namespace Field_spraying_ASP.NET_MVC.Models
 {
     public class ErrorViewModel
     {

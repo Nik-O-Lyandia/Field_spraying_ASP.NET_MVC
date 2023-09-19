@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Field_spraying_ASP.NET_MVC</AssemblyName>
+    <RootNamespace>Field_spraying_ASP.NET_MVC</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +18,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="npm run build" />
+  </Target>
 
 </Project>

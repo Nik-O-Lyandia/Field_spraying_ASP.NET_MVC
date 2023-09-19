@@ -2,9 +2,14 @@
   "version": "1.0.0",
   "name": "asp.net",
   "private": true,
-  "devDependencies": {},
-  "type": "module",
+  "devDependencies": {
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
+  },
   "dependencies": {
     "ol": "^8.1.0"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js"
   }
 }

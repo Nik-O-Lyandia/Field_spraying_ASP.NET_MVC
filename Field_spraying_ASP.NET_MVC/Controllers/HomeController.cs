@@ -1,8 +1,8 @@
-﻿using Gmaps_ASP.NET_MVC_Test.Models;
+﻿using Field_spraying_ASP.NET_MVC.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Gmaps_ASP.NET_MVC_Test.Controllers
+namespace Field_spraying_ASP.NET_MVC.Controllers
 {
     public class HomeController : Controller
     {
