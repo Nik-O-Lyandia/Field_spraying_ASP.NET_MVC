@@ -7,7 +7,9 @@ import { fromLonLat } from '/node_modules/ol/proj.js';
 import { Draw, Modify, Snap } from '/node_modules/ol/interaction.js';
 import { BingMaps, Vector as VectorSource } from '/node_modules/ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from '/node_modules/ol/layer.js';
-import { transform, toLonLat} from '/node_modules/ol/proj.js';
+import { transform, toLonLat } from '/node_modules/ol/proj.js';
+import { LineString } from '/node_modules/ol/geom.js';
+import { getArea, getLength } from '/node_modules/ol/sphere.js';
 
 //const Map = require('/node_modules/ol/Map.js');
 
@@ -85,19 +87,19 @@ undoButton.onclick = function () {
     //console.log(sourceFeatures);
     //const features = vector.getSource();
     //console.log(features);
-    console.log('\n\n');
+    //console.log('\n\n');
 
     const firstSourceFeature = sourceFeatures[0];
     //console.log(firstSourceFeature);
     //const firstFeature = features[0];
     //console.log(firstFeature);
-    console.log('\n\n');
+    //console.log('\n\n');
 
     const firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
     //console.log(firstSourceFeatureGeometry);
     //const firstFeatureGeometry = firstFeature.getGeometry();
     //console.log(firstFeatureGeometry);
-    console.log('\n\n');
+    //console.log('\n\n');
 
     const coords = firstSourceFeatureGeometry.getCoordinates();
     console.log(coords);
@@ -105,24 +107,41 @@ undoButton.onclick = function () {
     var coordinatesInGPS = [];
     var coordinatesInGPS2 = [];
     for (var i = 0; i < coords.length; i++) {
-        console.log(coords[i]);
+        //console.log(coords[i]);
         var lonlat = transform(coords[i], 'EPSG:3857', 'EPSG:4326');
         
         coordinatesInGPS.push(lonlat);
         coordinatesInGPS2.push(toLonLat(coords[i], 'EPSG:3857'));
     }
 
-    console.log(coordinatesInGPS);
-    console.log(coordinatesInGPS2);
+    //console.log(coordinatesInGPS);
+    //console.log(coordinatesInGPS2);
 
-    //  3760750.7584836264,   6784664.765869944
-    //  3760984.84688275,     6785147.274610994
-    //  3761302.53828156,     6784607.4380987305
-    //  3760750.7584836264,   6784664.765869944
+    let distanceBetweenPoints = function (latlng1, latlng2) {
+        var line = new LineString([latlng1, latlng2]);
+        return [Math.round(line.getLength() * 100) / 100, Math.round(getLength(line) * 100) / 100];
+    };
 
+    console.log(distanceBetweenPoints(coords[0][0], coords[0][1]));
     //console.log(coords[1].toFixed(2));
     //console.log(coords[1].toFixed(2));
+
+//    (1)[3760068.9670060794,   6784271.42795164]               [3760068.1628284436, 6784270.863947619]
+//    (2)[3759978.829972721,    6784266.898452477] -90; -5      [3759980.5543891885, 6784264.006500738]
+//    (3)[3759976.112273223,    6784422.260273792] -2;  +156
+//    (1)[3760068.9670060794,   6784271.42795164]  +92; -151
+
 }
+
+
+//let distanceBetweenPoints = function (latlng1, latlng2) {
+//    var line = new LineString([latlng1, latlng2]);
+//    console.log(new LineString([latlng1, latlng2]));
+//    console.log(line.getCoordinates());
+//    return Math.round(line.getLength() * 100) / 100;
+//};
+
+//console.log(distanceBetweenPoints([3760068.9670060794, 6784271.42795164], [3759978.829972721, 6784266.898452477]));
 
 draw.on('drawend', function () {
     map.removeInteraction(draw);
