@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "MapView";
+}
+<link rel="stylesheet" href="~/css/site.css" type="text/css" />
+<script type="module" src="~/js/bundle.js"></script>
+
+<div class="container">
+    <div class="row">
+        <div id="map" class="map"></div>
+    </div>
+    <div class="row">
+        <button id="draw_button">Select area</button>
+        <hr />
+        <form asp-action="Export" method="post">
+            <input type="text" id="txt" name="txt" />
+            <input type="submit" value="Export data" />
+        </form>
+        <hr />
+        <button id="set_loading_point_button">Set loading point</button>
+        <button id="export_button">Export data</button>
+        <button id="cancel_draw_button">Cancel selection</button>
+        <button id="undo_button">Undo selection</button>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
