@@ -80,33 +80,66 @@ drawButton.onclick = function () {
 }
 
 
-exportButton.onclick = function () {
-    let sourceFeatures = source.getFeatures();
-    let firstSourceFeature = sourceFeatures[0];
-    let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
-    let coords = firstSourceFeatureGeometry.getCoordinates();
-    console.log(coords);
-    console.log(coords[0]);
-    $.ajax({
-        url: "/Map/Export",
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        type: "POST",
-        dataType: "json",
-        data: JSON.stringify(coords[0]),
-        success: function (data) {
-            alert(data);
-        }
-    });
-    return false;
-}
+//exportButton.onclick = function () {
+//    let sourceFeatures = source.getFeatures();
+//    let firstSourceFeature = sourceFeatures[0];
+//    let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
+//    let coords = firstSourceFeatureGeometry.getCoordinates();
+//    console.log(coords);
+//    console.log(coords[0]);
+//    $.ajax({
+//        url: "/Map/Export",
+//        headers: {
+//            'Accept': 'application/json',
+//            'Content-Type': 'application/json'
+//        },
+//        type: "POST",
+//        dataType: "json",
+//        data: JSON.stringify(coords[0]),
+//        success: function (data) {
+//            alert(data);
+//        }
+//    });
+//    return false;
+//}
 
 cancelDrawButton.onclick = function () {
     map.removeInteraction(draw);
     map.removeInteraction(snap);
 }
+
+$(document).ready(function () {
+    $("form").submit(function (event) {
+        let sourceFeatures = source.getFeatures();
+        let firstSourceFeature = sourceFeatures[0];
+        let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
+        let coords = firstSourceFeatureGeometry.getCoordinates();
+        console.log(coords[0]);
+
+        var formData = JSON.stringify({
+            'area_name': $("#area_name").val(),
+            'coords': coords[0],
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "/Map/Export",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: formData,
+            dataType: "json",
+            success: function (data) {
+                alert(data);
+            }
+        }).done(function (data) {
+            console.log(data);
+        });
+
+        event.preventDefault();
+    });
+});
 
 //undoButton.onclick = function () {
 //    const sourceFeatures = source.getFeatures();
@@ -169,6 +202,6 @@ cancelDrawButton.onclick = function () {
 
 //console.log(distanceBetweenPoints([3760068.9670060794, 6784271.42795164], [3759978.829972721, 6784266.898452477]));
 
-draw.on('drawend', function () {
-    map.removeInteraction(draw);
-})
+//draw.on('drawend', function () {
+//    map.removeInteraction(draw);
+//})

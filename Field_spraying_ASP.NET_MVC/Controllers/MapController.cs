@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Amazon.DynamoDBv2.DataModel;
+using Field_spraying_ASP.NET_MVC.Models;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Field_spraying_ASP.NET_MVC.Controllers
 {
@@ -6,22 +9,50 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
     [ApiController]
     public class MapController : Controller
     {
-        [HttpGet]   // GET /api/test2
+        private readonly IDynamoDBContext _dynamoDBContext;
+
+        public MapController(IDynamoDBContext dynamoDBContext)
+        {
+            _dynamoDBContext = dynamoDBContext;
+        }
+
+        [HttpGet]   // GET /map
         public IActionResult MapView()
         {
             return View();
         }
 
-        [HttpPost("Export")]
-        public async Task<IActionResult> Export(float[][] coords)
+        [Route("get/{name}")]
+        [HttpGet]   // GET /map/get/{name}
+        public async Task<IActionResult> Get(string name)
         {
+            var area = await _dynamoDBContext.LoadAsync(name);
+            return Ok(area);
+        }
+
+        [HttpPost("Export")]
+        public async Task<IActionResult> Export([FromBody] JsonElement formData)
+        {
+            //Guid uuid = Guid.NewGuid();
+            //string uuidAsString = uuid.ToString();
+            var areaName = formData.GetProperty("area_name").ToString();
+            var coords = formData.GetProperty("coords").Deserialize<double[][]>();
+            
+
+            Area area = new Area() {
+                //Id = uuidAsString,
+                Name = areaName,
+                Coords = coords
+            };
+
+            await _dynamoDBContext.SaveAsync(area);
+
             string list = "";
             for (int i = 0; i < coords.Length; i++)
             {
                 list = list + " | " + String.Join(",", coords[i]);
             }
-            return Json("EXPORT SUCCESSFUL : " + list);
-            //return View();
+            return Ok("EXPORT SUCCESSFUL : " + list);
         }
     }
 }

@@ -11,18 +11,18 @@
     <div class="row">
         <button id="draw_button">Select area</button>
         <hr />
-        <form asp-action="Export" method="post">
-            <input type="text" id="txt" name="txt" />
-            <input type="submit" value="Export data" />
+        <form action="/Map/Export" method="post">
+
+            <div id="area_name-group" class="form-group">
+                <label for="area_name">Area name:</label>
+                <input type="text" class="form-control" id="area_name" name="area_name" placeholder="area_1"/>
+            </div>
+
+            <button type="submit" id="export_button" class="btn btn-success">Export area</button>
         </form>
         <hr />
         <button id="set_loading_point_button">Set loading point</button>
-        <button id="export_button">Export data</button>
         <button id="cancel_draw_button">Cancel selection</button>
         <button id="undo_button">Undo selection</button>
     </div>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
