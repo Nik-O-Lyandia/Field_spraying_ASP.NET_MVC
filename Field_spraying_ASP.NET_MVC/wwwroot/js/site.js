@@ -11,6 +11,10 @@ import { transform, toLonLat } from '/node_modules/ol/proj.js';
 import { LineString } from '/node_modules/ol/geom.js';
 import { getArea, getLength } from '/node_modules/ol/sphere.js';
 
+import Feature from '/node_modules/ol/Feature.js';
+import Polygon from '/node_modules/ol/geom/Polygon.js';
+import Point from '/node_modules/ol/geom/Point.js';
+
 //const Map = require('/node_modules/ol/Map.js');
 
 const bingStyles = [
@@ -65,6 +69,9 @@ const setLoadingPointButton = document.getElementById('set_loading_point_button'
 const exportButton = document.getElementById('export_button');
 const cancelDrawButton = document.getElementById('cancel_draw_button');
 const undoButton = document.getElementById('undo_button');
+//const importButton = document.getElementById('import_button');
+
+const textarea = document.getElementById('textarea');
 
 function addInteractions() {
 
@@ -79,36 +86,13 @@ drawButton.onclick = function () {
     addInteractions()
 }
 
-
-//exportButton.onclick = function () {
-//    let sourceFeatures = source.getFeatures();
-//    let firstSourceFeature = sourceFeatures[0];
-//    let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
-//    let coords = firstSourceFeatureGeometry.getCoordinates();
-//    console.log(coords);
-//    console.log(coords[0]);
-//    $.ajax({
-//        url: "/Map/Export",
-//        headers: {
-//            'Accept': 'application/json',
-//            'Content-Type': 'application/json'
-//        },
-//        type: "POST",
-//        dataType: "json",
-//        data: JSON.stringify(coords[0]),
-//        success: function (data) {
-//            alert(data);
-//        }
-//    });
-//    return false;
-//}
-
 cancelDrawButton.onclick = function () {
     map.removeInteraction(draw);
     map.removeInteraction(snap);
 }
 
 $(document).ready(function () {
+
     $("form").submit(function (event) {
         let sourceFeatures = source.getFeatures();
         let firstSourceFeature = sourceFeatures[0];
@@ -138,6 +122,19 @@ $(document).ready(function () {
         });
 
         event.preventDefault();
+    });
+
+    $("#import_button").click(function () {
+
+        $.get("/Map/Import", function (data) {
+
+            const feature = new Feature({
+                geometry: new Polygon([data.coords]),
+                name: data.name,
+            });
+
+            source.addFeature(feature)
+        });
     });
 });
 

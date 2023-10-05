@@ -30,7 +30,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             return Ok(area);
         }
 
-        [HttpPost("Export")]
+        [Route("Export")]
+        [HttpPost]
         public async Task<IActionResult> Export([FromBody] JsonElement formData)
         {
             //Guid uuid = Guid.NewGuid();
@@ -53,6 +54,14 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 list = list + " | " + String.Join(",", coords[i]);
             }
             return Ok("EXPORT SUCCESSFUL : " + list);
+        }
+
+        [Route("Import")]
+        [HttpGet]   // GET /map/import
+        public async Task<IActionResult> Import()
+        {
+            var area = await _dynamoDBContext.LoadAsync<Area>("area_1");
+            return Ok(area);
         }
     }
 }
