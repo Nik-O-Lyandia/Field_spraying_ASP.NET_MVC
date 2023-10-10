@@ -17,14 +17,6 @@ import Point from '/node_modules/ol/geom/Point.js';
 
 //const Map = require('/node_modules/ol/Map.js');
 
-const bingStyles = [
-    'RoadOnDemand',
-    'Aerial',
-    'AerialWithLabelsOnDemand',
-    'CanvasDark',
-    'OrdnanceSurvey',
-];
-
 const source = new VectorSource();
 const vector = new VectorLayer({
     source: source,
@@ -43,7 +35,7 @@ const map = new Map({
         new TileLayer({
             source: new BingMaps({
                 key: 'AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC',
-                imagerySet: bingStyles[1],
+                imagerySet: 'Aerial',
             }),
         }),
         vector,
@@ -64,35 +56,37 @@ let draw = new Draw({
 });
 let snap = new Snap({ source: source });
 
-const drawButton = document.getElementById('draw_button');
-const setLoadingPointButton = document.getElementById('set_loading_point_button');
-const exportButton = document.getElementById('export_button');
-const cancelDrawButton = document.getElementById('cancel_draw_button');
-const undoButton = document.getElementById('undo_button');
-//const importButton = document.getElementById('import_button');
-
-const textarea = document.getElementById('textarea');
-
-function addInteractions() {
-
-    map.addInteraction(draw);
-    map.addInteraction(snap);
-}
-
 /**
  * Handle change event.
  */
-drawButton.onclick = function () {
-    addInteractions()
-}
-
-cancelDrawButton.onclick = function () {
-    map.removeInteraction(draw);
-    map.removeInteraction(snap);
-}
-
 $(document).ready(function () {
 
+    //********************************************
+    //          ACTIVATE DRAW FUNC
+    //********************************************
+    function addInteractions() {
+        map.addInteraction(draw);
+        map.addInteraction(snap);
+    }
+
+    //********************************************
+    //          ACTIVATE DRAW CLICK ACTION
+    //********************************************
+    $("#draw_button").click(function () {
+        addInteractions();
+    });
+
+    //********************************************
+    //          CANCEL DRAW CLICK ACTION
+    //********************************************
+    $("#cancel_draw_button").click(function () {
+        map.removeInteraction(draw);
+        map.removeInteraction(snap);
+    });
+
+    //********************************************
+    //          EXPORT AREA ACTION
+    //********************************************
     $("form").submit(function (event) {
         let sourceFeatures = source.getFeatures();
         let firstSourceFeature = sourceFeatures[0];
@@ -124,6 +118,9 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
+    //********************************************
+    //          IMPORT AREA ACTION
+    //********************************************
     $("#import_button").click(function () {
 
         $.get("/Map/Import", function (data) {
