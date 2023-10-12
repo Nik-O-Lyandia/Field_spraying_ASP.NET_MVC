@@ -81,7 +81,7 @@ def checkInside(polygon, p):
 		return False
 
 	# Create a point at infinity, y is same as point p
-	exline = line(p, Point(p.x + 9999, p.y))
+	exline = line(p, Point(p.x + 99999999, p.y))
 	count = 0
 	i = 0
 	while True:
@@ -96,7 +96,7 @@ def checkInside(polygon, p):
 		i = (i + 1) % n
 		if i == 0:
 			break
-
+		
 	# When count is odd
 	if count & 1:
 		return True

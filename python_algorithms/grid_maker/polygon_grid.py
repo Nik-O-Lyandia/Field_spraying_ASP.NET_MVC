@@ -87,11 +87,11 @@ def create_hexgrid(polygon, side):
 
 # *********************************************
 
-def create_grid(polygon, side):
+def create_grid(polygon, distance):
     """
     returns an array of Points describing hexagons centers that are inside the given bounding_box
     :param bbox: The containing bounding box. The bbox coordinate should be in Webmercator.
-    :param side: The size of the hexagons'
+    :param distance: The size of the hexagons' OR the radius of circle
     :return: The hexagon grid
     """
     grid = []
@@ -108,39 +108,71 @@ def create_grid(polygon, side):
     y_min = min(bbox[1], bbox[3])
     y_max = max(bbox[1], bbox[3])
 
-    x_cur = 0
+    i = 0
+    x_cur = x_min
     while x_cur < x_max:
-        y_cur = 0
+        y_cur = y_min
         while y_cur < y_max:
-            c_x = x_cur + side / 2
-            c_y = y_cur + side / 2
+            c_x = x_cur + distance / 2
+            c_y = y_cur + distance / 2
             if point_inside_polygon.checkInside(polygon=polygon, p=(c_x,c_y)):
                 grid.append((c_x,c_y))
-            y_cur = y_cur + side
-        x_cur = x_cur + side
+                # print(f"Progress: {i} points are done.")
+            y_cur = y_cur + 2*distance
+            i = i + 1
+        x_cur = x_cur + 2*distance
+
+    # Getting points along the perimeter trajectory
+    # for i in range(len(polygon)):
+    #     point_1 = polygon[i]
+    #     point_2 = ()
+    #     if not i == len(polygon) - 1:
+    #         point_2 = polygon[i+1]
+    #     else:
+    #         point_2 = polygon[0]
+
+    #     line = 0
+    #     line = math.sqrt((point_1[0] - point_2[0])**2 + (point_1[1] - point_2[1])**2)
+
+    #     # px, py = 0, 0
+    #     line_points_count = math.floor(line / (distance * 2))
+    #     for j in range(line_points_count):
+    #         grid.append(get_point_along_line(point_1, point_2, j * distance * 2))
+    
+    # Getting key points on perimeter trajectory vertices
+    for i in range(len(polygon)):
+        grid.append(polygon[i])
 
     return grid, bbox
 
 # *********************************************
 
-def plot_result(features, points, edge, bbox):
+def plot_result(features, grid_points, distance, bbox):
 
     fig = plt.figure()
     ax = fig.add_subplot(1, 1, 1)
+
+    # print(f"Area of polygon: {get_polygon_area(features[0])}")
+    # print(f"Area of inner polygon: {get_polygon_area(features[1])}")
+    # print(f"Area coverage: {get_covered_area(grid_points, distance)}")
     
     for feature in features:
+
         feature.append(feature[0])
         feature_unziped = list(zip(*feature))
 
         ax.plot(feature_unziped[0],feature_unziped[1])
 
-    for points_collection in points:
+    for points_collection in grid_points:
         # hex_grid = []
         # for hex_center in hex_centers:
         #     hex_grid.append(create_hexagon(edge,hex_center[0],hex_center[1]))
         grid = []
         for center in points_collection:
-            grid.append(create_square(edge,center[0],center[1]))
+            grid.append(create_square(distance,center[0],center[1]))
+            Drawing_uncolored_circle = plt.Circle( (center[0],center[1]), 10, fill = False )
+            # ax.set_aspect( 1 )
+            ax.add_artist( Drawing_uncolored_circle )
 
         # res = list(zip(*hex_centers))
         res_squares = list(zip(*points_collection))
@@ -159,7 +191,7 @@ def plot_result(features, points, edge, bbox):
         #     ax.plot(square[0],square[1])
 
         # ax.scatter(res[0], res[1])
-        # ax.scatter(res_squares[0], res_squares[1])
+        ax.scatter(res_squares[0], res_squares[1])
 
     xlim_min = bbox[0]
     xlim_max = bbox[2]
@@ -174,3 +206,14 @@ def plot_result(features, points, edge, bbox):
     ax.minorticks_on()
 
     plt.show()
+
+# def get_point_along_line(point_1, point_2, distance, backwards = False):
+#     dx = point_2[0] - point_1[0]
+#     dy = point_2[1] - point_1[1]
+#     len = math.sqrt(dx**2 + dy**2)
+
+#     if backwards:
+#         dx = -dx
+#         dy = -dy
+
+#     return (point_1[0] + dx * (distance / len), point_1[1] + dy * (distance / len))

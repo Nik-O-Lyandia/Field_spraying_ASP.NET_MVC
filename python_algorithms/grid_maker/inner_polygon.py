@@ -1,6 +1,6 @@
 import math
 
-from point_inside_polygon import checkInside
+# from point_inside_polygon import checkInside
 from split_angle import split_angle
 
 def create_inner_polygon(polygon, distance, concave_splits: int = 1):
@@ -15,15 +15,16 @@ def create_inner_polygon(polygon, distance, concave_splits: int = 1):
         else:
             points_for_angle = [polygon[i-1], polygon[i], polygon[i+1]]
         
-        end_points = split_angle(points_for_angle, distance, concave_splits)
-        adjusted_points = []
-        for point in end_points:
-            if checkInside(polygon, point):
-                adjusted_points.append(point)
+        end_points = split_angle(polygon, points_for_angle, distance, concave_splits)
+        # adjusted_points = []
+        # for point in end_points:
+        #     if checkInside(polygon, point):
+        #         adjusted_points.append(point)
             # else:
             #     adjusted_points.append(get_point_along_line(polygon[i], point, distance, True))
 
-        result = result + adjusted_points
+        result = result + end_points
+        print(f"Progress: {i+1} out of {len(polygon)} vertices are done.")
 
     return result
 
