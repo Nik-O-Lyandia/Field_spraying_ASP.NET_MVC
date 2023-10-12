@@ -49,7 +49,7 @@ def main(argv: list, arc):
     # if not isConvex(polygon):
     #     raise ValueError("Polygon is concave")
     edge = math.sqrt(10**2/(3/2 * math.sqrt(3)))
-    edge = 10
+    edge = 50
 
     # hex_centers, bbox = create_hexgrid(polygon, edge)
     print("Creating inner polygon...")

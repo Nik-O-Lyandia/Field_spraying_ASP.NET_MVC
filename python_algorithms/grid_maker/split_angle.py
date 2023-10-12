@@ -3,11 +3,19 @@ import matplotlib.pyplot as plt
 
 from point_inside_polygon import checkInside
 
-def angle_between_3_points(points):
+def angle_between_3_points_atan2(points):
     vector_p1_p2 = (points[0][0]-points[1][0], points[0][1]-points[1][1])
     vector_p3_p2 = (points[2][0]-points[1][0], points[2][1]-points[1][1])
 
     angle = math.atan2(vector_p3_p2[1],vector_p3_p2[0]) - math.atan2(vector_p1_p2[1],vector_p1_p2[0])
+    return angle
+
+def angle_between_3_points_acos(points):
+    l1 = math.sqrt((points[0][0] - points[1][0])**2 + (points[0][1] - points[1][1])**2)
+    l2 = math.sqrt((points[2][0] - points[1][0])**2 + (points[2][1] - points[1][1])**2)
+    l3 = math.sqrt((points[2][0] - points[0][0])**2 + (points[2][1] - points[0][1])**2)
+
+    angle = math.acos((l1**2 + l2**2 - l3**2) / (2 * l1 * l2))
     return angle
 
 def split_angle(polygon: list, points: list, distance, concave_splits: int = 1, from_reflex: bool = False):
@@ -22,40 +30,31 @@ def split_angle(polygon: list, points: list, distance, concave_splits: int = 1, 
     if from_reflex:
         splits = concave_splits
 
-    # angle_is_convex = True
+    angle_is_convex = True
     # Unpacking the center point
-    # print(points)
     c_x, c_y = points[1]
 
     # Calculating angle between p1 and p3 with angle center p2
-    angle_p1_p3 = angle_between_3_points(points)
-    # print(f"p1-p3 degree: rad - {angle_p1_p3}; deg - {math.degrees(angle_p1_p3)}")
-    # if angle_p1_p3 < 0 and not from_reflex:
-    #     angle_is_convex = False
-        # angle_p1_p3 = -angle_p1_p3
-    if angle_p1_p3 < 0 and from_reflex:
-        angle_p1_p3 = angle_p1_p3 + 2*math.pi
-    # elif angle_p1_p3 < 0 and from_reflex:
-    #     angle_p1_p3 = -angle_p1_p3
+    angle_p1_p3 = angle_between_3_points_acos(points)
 
     # Creating point on zero-degree imaginary line
     zero_degree_point = (c_x + 100, c_y)
 
     # Calculating angle between p1 and zero-degree point
-    angle_p1_zeroPoint = angle_between_3_points([zero_degree_point,points[1],points[0]])
+    angle_p1_zeroPoint = angle_between_3_points_atan2([zero_degree_point,points[1],points[0]])
     # if angle_p1_zeroPoint < 0:
     #     angle_p1_zeroPoint = -angle_p1_zeroPoint
 
     # Calculating angle between p3 and zero-degree point
-    angle_p3_zeroPoint = angle_between_3_points([zero_degree_point,points[1],points[2]])
+    angle_p3_zeroPoint = angle_between_3_points_atan2([zero_degree_point,points[1],points[2]])
     # if angle_p3_zeroPoint < 0:
     #     angle_p3_zeroPoint = -angle_p3_zeroPoint
     
     # print(points)
 
     end_points = []
-    final_angle = angle_p1_zeroPoint
     endx, endy = 0,0
+    final_angle = angle_p1_zeroPoint
     # Forming final bisector angle in global coordinates
     for i in range(splits-1):
         # Choosing smallest angle between p1-zeroPoint and p3-zeroPoint
@@ -97,14 +96,12 @@ def split_angle(polygon: list, points: list, distance, concave_splits: int = 1, 
         endy = c_y + end_line_len * math.sin(final_angle)
         endx = c_x + end_line_len * math.cos(final_angle)
 
-        # print(f"Final angle: rad - {final_angle}; deg - {math.degrees(final_angle)}")
-        # print((endx, endy))
-    
-    if checkInside(polygon, (endx,endy)):
-        end_points.append((endx, endy))
-    else:
-        # print("-----REFLEX ANGLE START-----")
-        end_points = build_reflex_angle(polygon, points, distance, concave_splits)
+        # if angle_is_convex:
+        if checkInside(polygon, (endx, endy)):
+            end_points.append((endx, endy))
+        else:
+            # print("-----REFLEX ANGLE START-----")
+            end_points = build_reflex_angle(polygon, points, distance, concave_splits)
     # line_p1_end = math.sqrt((points[0][0] - endx)**2 + (points[0][1] - endy)**2)
     # line_p3_end = math.sqrt((points[2][0] - endx)**2 + (points[2][1] - endy)**2)
     
@@ -118,36 +115,36 @@ def split_angle(polygon: list, points: list, distance, concave_splits: int = 1, 
     #                  PLOT RESULT
     # ***********************************************
 
-    # Unzipping points list for plot
-    points_unzipped = list(zip(*points))
-    end_points_unzipped = list(zip(*end_points))
+    # # Unzipping points list for plot
+    # points_unzipped = list(zip(*points))
+    # end_points_unzipped = list(zip(*end_points))
 
-    # plot the points
-    fig = plt.figure()
-    ax = plt.subplot(1,1,1)
-    ax.set_ylim([min(points_unzipped[1])-50, max(points_unzipped[1])+50])  
-    ax.set_xlim([min(points_unzipped[0])-50, max(points_unzipped[0])+50])
-    # ax.set_xlim([min(points_unzipped[0])-50, max(points_unzipped[0]) + max(points_unzipped[1])-min(points_unzipped[1])+50])
-    for i in range(len(end_points)):
-        ax.plot([c_x, end_points[i][0]], [c_y, end_points[i][1]])
+    # # plot the points
+    # fig = plt.figure()
+    # ax = plt.subplot(1,1,1)
+    # ax.set_ylim([min(points_unzipped[1])-50, max(points_unzipped[1])+50])  
+    # ax.set_xlim([min(points_unzipped[0])-50, max(points_unzipped[0])+50])
+    # # ax.set_xlim([min(points_unzipped[0])-50, max(points_unzipped[0]) + max(points_unzipped[1])-min(points_unzipped[1])+50])
+    # for i in range(len(end_points)):
+    #     ax.plot([c_x, end_points[i][0]], [c_y, end_points[i][1]])
     
-    ax.plot([c_x, points[0][0]], [c_y, points[0][1]])
-    ax.plot([c_x, points[2][0]], [c_y, points[2][1]])
-    ax.scatter(points_unzipped[0], points_unzipped[1])
-    ax.scatter(end_points_unzipped[0], end_points_unzipped[1])
-    ax.scatter(zero_degree_point[0],zero_degree_point[1])
+    # ax.plot([c_x, points[0][0]], [c_y, points[0][1]])
+    # ax.plot([c_x, points[2][0]], [c_y, points[2][1]])
+    # ax.scatter(points_unzipped[0], points_unzipped[1])
+    # ax.scatter(end_points_unzipped[0], end_points_unzipped[1])
+    # ax.scatter(zero_degree_point[0],zero_degree_point[1])
 
-    ax.grid(which = "major", linewidth = 1, linestyle = '-')
-    ax.grid(which = "minor", linewidth = 0.2, linestyle = '--')
-    ax.minorticks_on()
+    # ax.grid(which = "major", linewidth = 1, linestyle = '-')
+    # ax.grid(which = "minor", linewidth = 0.2, linestyle = '--')
+    # ax.minorticks_on()
 
-    plt.show()
+    # plt.show()
 
     # print()
     return end_points
 
 
-def build_reflex_angle(polygon: list, points: list, distance, splits: int = 2):
+def build_reflex_angle(polygon:list, points: list, distance, splits: int = 2):
     '''
             ----NECESSARY FORMAT----
     points - list of 3 Tuples (x, y) - [(p1),(p2),(p3)];
@@ -163,12 +160,12 @@ def build_reflex_angle(polygon: list, points: list, distance, splits: int = 2):
     zero_degree_point = (c_x + 100, c_y)
 
     # Calculating angle between p1 and zero-degree point
-    angle_p1_zeroPoint = angle_between_3_points([zero_degree_point,points[1],points[0]])
+    angle_p1_zeroPoint = angle_between_3_points_atan2([zero_degree_point,points[1],points[0]])
     # if angle_p1_zeroPoint < 0:
     #     angle_p1_zeroPoint = -angle_p1_zeroPoint
 
     # Calculating angle between p3 and zero-degree point
-    angle_p3_zeroPoint = angle_between_3_points([zero_degree_point,points[1],points[2]])
+    angle_p3_zeroPoint = angle_between_3_points_atan2([zero_degree_point,points[1],points[2]])
     # if angle_p3_zeroPoint < 0:
     #     angle_p3_zeroPoint = -angle_p3_zeroPoint
     # print(f"angle_p1_zeroPoint degree: rad - {angle_p1_zeroPoint}; deg - {math.degrees(angle_p1_zeroPoint)}")
@@ -191,16 +188,15 @@ def build_reflex_angle(polygon: list, points: list, distance, splits: int = 2):
         # final_angle_1 = -final_angle_1 + 2*math.pi
         # if points[2][1] > points[1][1]:
         if final_angle_2 > 0:
-            if final_angle_1 >= -math.pi/2 or final_angle_2 <= math.pi/2:
-                final_angle_1 = final_angle_1 - math.pi/2
-                final_angle_2 = final_angle_2 + math.pi/2
-            
-            elif final_angle_1 < -math.pi/2 or final_angle_2 > math.pi/2:
+            if abs(final_angle_1) + final_angle_2 > math.pi:
                 final_angle_1 = final_angle_1 + math.pi/2
                 final_angle_2 = final_angle_2 - math.pi/2
+            else:
+                final_angle_1 = final_angle_1 - math.pi/2
+                final_angle_2 = final_angle_2 + math.pi/2
         
         # if points[2][1] < points[1][1]:
-        if final_angle_2 < 0:
+        elif final_angle_2 < 0:
             # final_angle_2 = -final_angle_2 + 2*math.pi
             if final_angle_1 < final_angle_2:
                 final_angle_1 = final_angle_1 - math.pi/2
@@ -212,17 +208,15 @@ def build_reflex_angle(polygon: list, points: list, distance, splits: int = 2):
     else:
         # if points[2][1] < points[1][1]:
         if final_angle_2 < 0:
-            # final_angle_2 = -final_angle_2 + 2*math.pi
-            if final_angle_1 <= math.pi/2 or final_angle_2 >= -math.pi/2:
-                final_angle_1 = final_angle_1 + math.pi/2
-                final_angle_2 = final_angle_2 - math.pi/2
-            
-            elif final_angle_1 > math.pi/2 or final_angle_2 < -math.pi/2:
+            if final_angle_1 + abs(final_angle_2) > math.pi:
                 final_angle_1 = final_angle_1 - math.pi/2
                 final_angle_2 = final_angle_2 + math.pi/2
+            else:
+                final_angle_1 = final_angle_1 + math.pi/2
+                final_angle_2 = final_angle_2 - math.pi/2
 
         # if points[2][1] > points[1][1]:
-        if final_angle_2 > 0:
+        elif final_angle_2 > 0:
             if final_angle_1 < final_angle_2:
                 final_angle_1 = final_angle_1 - math.pi/2
                 final_angle_2 = final_angle_2 + math.pi/2
