@@ -27,6 +27,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
         public async Task<IActionResult> Get(string name)
         {
             var area = await _dynamoDBContext.LoadAsync(name);
+
             return Ok(area);
         }
 

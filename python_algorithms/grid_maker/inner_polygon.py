@@ -1,11 +1,16 @@
-import math
 
-# from point_inside_polygon import checkInside
-from split_angle import split_angle
+from grid_maker.split_angle import split_angle
 
-def create_inner_polygon(polygon, distance, concave_splits: int = 1):
+def create_inner_polygon(polygon:list, distance, concave_splits: int = 1):
+    '''
+    Returns inner polygon with [distance] offset.\n
+    :polygon: list of polygon points
+    :distance: offset distance
+    :concave_splits: number of splits for concave angles
+    '''
 
     result = []
+    # For every point in polygon
     for i in range(len(polygon)):
         points_for_angle = []
         if i == 0:
@@ -15,26 +20,10 @@ def create_inner_polygon(polygon, distance, concave_splits: int = 1):
         else:
             points_for_angle = [polygon[i-1], polygon[i], polygon[i+1]]
         
+        # Finding points for inner polygon
         end_points = split_angle(polygon, points_for_angle, distance, concave_splits)
-        # adjusted_points = []
-        # for point in end_points:
-        #     if checkInside(polygon, point):
-        #         adjusted_points.append(point)
-            # else:
-            #     adjusted_points.append(get_point_along_line(polygon[i], point, distance, True))
 
         result = result + end_points
         print(f"Progress: {i+1} out of {len(polygon)} vertices are done.")
 
     return result
-
-# def get_point_along_line(point_1, point_2, distance, backwards = False):
-#     dx = point_2[0] - point_1[0]
-#     dy = point_2[1] - point_1[1]
-#     len = math.sqrt(dx**2 + dy**2)
-
-#     if backwards:
-#         dx = -dx
-#         dy = -dy
-
-#     return (point_1[0] + dx * (distance / len), point_1[1] + dy * (distance / len))

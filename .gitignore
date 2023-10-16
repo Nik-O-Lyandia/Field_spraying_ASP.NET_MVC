@@ -361,3 +361,12 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/python_algorithms/.vscode
+/python_algorithms/docs
+/python_algorithms/maps
+/python_algorithms/coverage_test.py
+/python_algorithms/generate_np_maps.py
+/python_algorithms/maps_orig
+/python_algorithms/test.py
+/python_algorithms/grid_maker/__area.py
+/python_algorithms/grid_maker/__process_reflex_angle.py

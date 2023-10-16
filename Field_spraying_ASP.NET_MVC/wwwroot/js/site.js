@@ -10,6 +10,9 @@ import { Tile as TileLayer, Vector as VectorLayer } from '/node_modules/ol/layer
 import { transform, toLonLat } from '/node_modules/ol/proj.js';
 import { LineString } from '/node_modules/ol/geom.js';
 import { getArea, getLength } from '/node_modules/ol/sphere.js';
+import Select from '/node_modules/ol/interaction/Select.js';
+import { Fill, Stroke, Style } from '/node_modules/ol/style.js';
+import { pointerMove } from '/node_modules/ol/events/condition.js';
 
 import Feature from '/node_modules/ol/Feature.js';
 import Polygon from '/node_modules/ol/geom/Polygon.js';
@@ -21,8 +24,8 @@ const source = new VectorSource();
 const vector = new VectorLayer({
     source: source,
     style: {
-        'fill-color': 'rgba(255, 255, 255, 0.2)',
-        'stroke-color': '#48a1f0',
+        'fill-color': 'rgba(220, 220, 220, 0.2)',
+        'stroke-color': 'rgba(220, 220, 220, 0.8)',
         'stroke-width': 2,
         'circle-radius': 3,
         'circle-fill-color': '#48a1f0',
@@ -47,7 +50,6 @@ const map = new Map({
 });
 
 const modify = new Modify({ source: source });
-map.addInteraction(modify);
 
 //let draw, snap; // global so we can remove them later
 let draw = new Draw({
@@ -56,24 +58,69 @@ let draw = new Draw({
 });
 let snap = new Snap({ source: source });
 
-/**
- * Handle change event.
- */
-$(document).ready(function () {
 
-    //********************************************
-    //          ACTIVATE DRAW FUNC
-    //********************************************
-    function addInteractions() {
-        map.addInteraction(draw);
-        map.addInteraction(snap);
+//********************************************
+//          SELECTING AREA
+//********************************************
+//let select = null; // ref to currently selected interaction
+
+const selected = new Style({
+    fill: new Fill({
+        color: 'rgba(0, 0, 255, 0.2)',
+    }),
+    stroke: new Stroke({
+        color: 'rgba(0, 0, 255, 0.8)',
+        width: 2,
+    }),
+});
+
+const hovered = new Style({
+    fill: new Fill({
+        color: 'rgba(0, 100, 255, 0.2)',
+    }),
+    stroke: new Stroke({
+        color: 'rgba(0, 100, 255, 0.6)',
+        width: 2,
+    }),
+});
+
+// select interaction working on "singleclick"
+const select = new Select({ style: selected });
+
+// select interaction working on "pointermove"
+const selectPointerMove = new Select({
+    condition: pointerMove,
+    style: hovered,
+});
+
+let selectedFeature = null;
+
+select.on("select", function (e) {
+    if (e.selected.length > 0) {
+        map.removeInteraction(selectPointerMove);
+        selectedFeature = e.target.getFeatures().item(0);
     }
+
+    if (e.deselected.length > 0 && e.selected.length == 0) {
+        selectedFeature = null;
+        map.removeInteraction(select);
+    }
+
+});
+
+
+//********************************************
+//          HANDLE CHANGE EVENTS
+//********************************************
+$(document).ready(function () {
 
     //********************************************
     //          ACTIVATE DRAW CLICK ACTION
     //********************************************
     $("#draw_button").click(function () {
-        addInteractions();
+        map.addInteraction(draw);
+        map.addInteraction(snap);
+        map.addInteraction(modify);
     });
 
     //********************************************
@@ -82,6 +129,7 @@ $(document).ready(function () {
     $("#cancel_draw_button").click(function () {
         map.removeInteraction(draw);
         map.removeInteraction(snap);
+        map.removeInteraction(modify);
     });
 
     //********************************************
@@ -89,32 +137,34 @@ $(document).ready(function () {
     //********************************************
     $("form").submit(function (event) {
         let sourceFeatures = source.getFeatures();
-        let firstSourceFeature = sourceFeatures[0];
-        let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
-        let coords = firstSourceFeatureGeometry.getCoordinates();
-        console.log(coords[0]);
+        if (sourceFeatures != null) {
+            let firstSourceFeature = sourceFeatures[0];
+            let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
+            let coords = firstSourceFeatureGeometry.getCoordinates();
 
-        var formData = JSON.stringify({
-            'area_name': $("#area_name").val(),
-            'coords': coords[0],
-        });
+            console.log(coords[0]);
 
-        $.ajax({
-            type: "POST",
-            url: "/Map/Export",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            data: formData,
-            dataType: "json",
-            success: function (data) {
-                alert(data);
-            }
-        }).done(function (data) {
-            console.log(data);
-        });
+            var formData = JSON.stringify({
+                'area_name': $("#area_name").val(),
+                'coords': coords[0],
+            });
 
+            $.ajax({
+                type: "POST",
+                url: "/Map/Export",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: formData,
+                dataType: "json",
+                success: function (data) {
+                    alert(data);
+                }
+            }).done(function (data) {
+                console.log(data);
+            });
+        }
         event.preventDefault();
     });
 
@@ -130,72 +180,59 @@ $(document).ready(function () {
                 name: data.name,
             });
 
+            console.log(feature);
+
             source.addFeature(feature)
         });
     });
+
+    //********************************************
+    //           AREA SELECTION
+    //********************************************
+    $("#select_area_button").click(function () {
+
+        map.addInteraction(selectPointerMove);
+        map.addInteraction(select);
+
+    });
+
+    //********************************************
+    //      CALCULATE COVERAGE TRAJECTORY
+    //********************************************
+    $("#build_trajectory_button").click(function () {
+
+        if (selectedFeature != null) {
+            let selectedFeatureName = selectedFeature.get("name");
+
+            //console.log(selectedFeature);
+
+            var formData = JSON.stringify({
+                'area_name': selectedFeatureName
+            });
+
+        //$.ajax({
+        //    type: "POST",
+        //    url: "/Map/Export",
+        //    headers: {
+        //        'Accept': 'application/json',
+        //        'Content-Type': 'application/json'
+        //    },
+        //    data: formData,
+        //    dataType: "json",
+        //    success: function (data) {
+        //        alert(data);
+        //    }
+        //}).done(function (data) {
+        //    console.log(data);
+        //});
+
+        //event.preventDefault();
+        }
+    });
 });
 
-//undoButton.onclick = function () {
-//    const sourceFeatures = source.getFeatures();
-//    //console.log(sourceFeatures);
-//    //const features = vector.getSource();
-//    //console.log(features);
-//    //console.log('\n\n');
-
-//    const firstSourceFeature = sourceFeatures[0];
-//    //console.log(firstSourceFeature);
-//    //const firstFeature = features[0];
-//    //console.log(firstFeature);
-//    //console.log('\n\n');
-
-//    const firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
-//    //console.log(firstSourceFeatureGeometry);
-//    //const firstFeatureGeometry = firstFeature.getGeometry();
-//    //console.log(firstFeatureGeometry);
-//    //console.log('\n\n');
-
-//    const coords = firstSourceFeatureGeometry.getCoordinates();
-//    console.log(coords);
-
-//    var coordinatesInGPS = [];
-//    var coordinatesInGPS2 = [];
-//    for (var i = 0; i < coords.length; i++) {
-//        //console.log(coords[i]);
-//        var lonlat = transform(coords[i], 'EPSG:3857', 'EPSG:4326');
-
-//        coordinatesInGPS.push(lonlat);
-//        coordinatesInGPS2.push(toLonLat(coords[i], 'EPSG:3857'));
-//    }
-
-//    //console.log(coordinatesInGPS);
-//    //console.log(coordinatesInGPS2);
-
-//    let distanceBetweenPoints = function (latlng1, latlng2) {
-//        var line = new LineString([latlng1, latlng2]);
-//        return [Math.round(line.getLength() * 100) / 100, Math.round(getLength(line) * 100) / 100];
-//    };
-
-//    console.log(distanceBetweenPoints(coords[0][0], coords[0][1]));
-//    //console.log(coords[1].toFixed(2));
-//    //console.log(coords[1].toFixed(2));
 
 //    //    (1)[3760068.9670060794,   6784271.42795164]               [3760068.1628284436, 6784270.863947619]
 //    //    (2)[3759978.829972721,    6784266.898452477] -90; -5      [3759980.5543891885, 6784264.006500738]
 //    //    (3)[3759976.112273223,    6784422.260273792] -2;  +156
 //    //    (1)[3760068.9670060794,   6784271.42795164]  +92; -151
-
-//}
-
-
-//let distanceBetweenPoints = function (latlng1, latlng2) {
-//    var line = new LineString([latlng1, latlng2]);
-//    console.log(new LineString([latlng1, latlng2]));
-//    console.log(line.getCoordinates());
-//    return Math.round(line.getLength() * 100) / 100;
-//};
-
-//console.log(distanceBetweenPoints([3760068.9670060794, 6784271.42795164], [3759978.829972721, 6784266.898452477]));
-
-//draw.on('drawend', function () {
-//    map.removeInteraction(draw);
-//})

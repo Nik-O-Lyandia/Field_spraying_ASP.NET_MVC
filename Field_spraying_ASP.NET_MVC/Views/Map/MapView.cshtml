@@ -9,7 +9,8 @@
         <div id="map" class="map"></div>
     </div>
     <div class="row">
-        <button id="draw_button">Select area</button>
+        <button id="draw_button" type="button" class="btn btn-primary">Draw new area</button>
+        <button id="cancel_draw_button" type="button" class="btn btn-primary">Cancel drawing</button>
         <hr />
         <form action="/Map/Export" method="post">
 
@@ -21,11 +22,13 @@
             <button type="submit" id="export_button" class="btn btn-success">Export area</button>
         </form>
         <hr />
-        <textarea id="textarea" name="textarea"></textarea>
-        <button id="import_button">Import area</button>
+        <button id="import_button" type="button" class="btn btn-primary">Import area</button>
         <hr />
-        <button id="set_loading_point_button">Set loading point</button>
-        <button id="cancel_draw_button">Cancel selection</button>
-        <button id="undo_button">Undo selection</button>
+        <button id="select_area_button" type="button" class="btn btn-primary">Select area</button>
+        <hr />
+        <button id="build_trajectory_button" type="button" class="btn btn-primary">Build trajectory</button>
+        <hr />
+        <button id="set_loading_point_button" type="button" class="btn btn-primary">Set loading point</button>
+        <button id="undo_button" type="button" class="btn btn-primary">Undo selection</button>
     </div>
 </div>
