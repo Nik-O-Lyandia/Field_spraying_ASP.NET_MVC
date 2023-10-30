@@ -1,5 +1,3 @@
-import sys
-
 from grid_maker import polygon_grid
 from grid_maker import inner_polygon
 
@@ -14,27 +12,16 @@ def make_grid(polygon:list, spraying_radius):
     distance = spraying_radius
 
     # hex_centers, bbox = create_hexgrid(polygon, edge)
-    print("Creating inner polygon...")
+    # print("Creating inner polygon...")
     small_polygon = inner_polygon.create_inner_polygon(polygon, distance, 4)
-    print("Inner polygon created.")
+    # print("Inner polygon created.")
 
-    print("Creating grid...")
+    # print("Creating grid...")
     grid_centers_coords, bbox, map_np = polygon_grid.create_grid(small_polygon, distance)
-    print("Grid created.")
+    # print("Grid created.")
 
     # print("Plotting result...")
     # polygon_grid.plot_result([polygon,small_polygon], [grid_centers_coords], distance=distance, bbox=[bbox[0]-100,bbox[1]-100,bbox[2]+100,bbox[3]+100])
     # print("Plotted.")
 
     return grid_centers_coords, map_np
-
-# def main(argv: list, arc):
-#     args = argv[1:]
-#     # args is a list of the command line args
-
-#     # if args '-p':
-#     #     polygon = list(args[1])
-    
-
-# if __name__ == "__main__":
-#     main(sys.argv, len(sys.argv))

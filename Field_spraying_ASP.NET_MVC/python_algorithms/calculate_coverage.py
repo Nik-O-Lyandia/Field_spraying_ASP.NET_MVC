@@ -2,12 +2,12 @@ import numpy as np
 from coverage_planner import CoveragePlanner, HeuristicType, PlannerStatus
 from tabulate import tabulate
 
-from coverage_test import plot_map
+# from coverage_test import plot_map
 from grid_maker.grid_maker import make_grid
 
 def calculate_coverage(area_name:str, polygon:list, spraying_radius):
     cp_debug_level = 0
-    test_show_each_result = False
+    # test_show_each_result = False
 
     # maps = ["map1", "map2", "map3", "map4"]
     cp_heuristics = [HeuristicType.VERTICAL,
@@ -26,15 +26,15 @@ def calculate_coverage(area_name:str, polygon:list, spraying_radius):
     # Iterate over each orientation with each heuristic
     for heuristic in cp_heuristics:
         for orientation in orientations:
-            if test_show_each_result:
-                print("\n\nIteration[map:{}, cp:{}, initial_orientation:{}]".format(
-                    area_name, heuristic.name, orientation))
+            # if test_show_each_result:
+            #     print("\n\nIteration[map:{}, cp:{}, initial_orientation:{}]".format(
+            #         area_name, heuristic.name, orientation))
 
             cp.start(initial_orientation=orientation, cp_heuristic=heuristic)
             cp.compute()
 
-            if test_show_each_result:
-                cp.show_results()
+            # if test_show_each_result:
+            #     cp.show_results()
 
             res = [heuristic.name, orientation]
             res.extend(cp.result())
@@ -44,7 +44,7 @@ def calculate_coverage(area_name:str, polygon:list, spraying_radius):
     compare_tb.sort(key=lambda x: (x[3], x[4]))
 
     # Show results
-    print("Map tested: {}".format(area_name))
+    # print("Map tested: {}".format(area_name))
 
     # Print the summary of results for the given map
     summary = [row[0:5] for row in compare_tb]
@@ -58,16 +58,16 @@ def calculate_coverage(area_name:str, polygon:list, spraying_radius):
                         "Orientation", "Found?", "Steps", "Cost"]
     summary_tb = tabulate(summary, compare_tb_headers,
                         tablefmt="pretty", floatfmt=".2f")
-    print(summary_tb)
+    # print(summary_tb)
 
     # # Print the policy map of the best coverage planner
     # cp.print_policy_map(trajectory=compare_tb[0][5], trajectory_annotations=[])
 
     # cp.print_trajectory(trajectory=compare_tb[0][5])
 
-    # Plot the complete trajectory map
-    plot_map(target_map, compare_tb[0][5], map_name=area_name,
-            params_str="Heuristic:{}, Initial Orientation: {}".format(compare_tb[0][0], cp.movement_name[compare_tb[0][1]]))
+    # # Plot the complete trajectory map
+    # plot_map(target_map, compare_tb[0][5], map_name=area_name,
+    #         params_str="Heuristic:{}, Initial Orientation: {}".format(compare_tb[0][0], cp.movement_name[compare_tb[0][1]]))
 
     # # Print the best path
     # print("\nList of coordinates of the best path: [map:{}, initial orientation: {} ({}), coverage path Heuristic:{}]".format(

@@ -2,33 +2,79 @@
     ViewData["Title"] = "MapView";
 }
 <link rel="stylesheet" href="~/css/site.css" type="text/css" />
+<link rel="stylesheet" href="~/css/spinner.css" type="text/css" />
+<link rel="stylesheet" href="~/css/overlay.css" type="text/css" />
 <script type="module" src="~/js/bundle.js"></script>
 
-<div class="container">
-    <div class="row">
-        <div id="map" class="map"></div>
-    </div>
-    <div class="row">
-        <button id="draw_button" type="button" class="btn btn-primary">Draw new area</button>
-        <button id="cancel_draw_button" type="button" class="btn btn-primary">Cancel drawing</button>
-        <hr />
-        <form action="/Map/Export" method="post">
-
-            <div id="area_name-group" class="form-group">
-                <label for="area_name">Area name:</label>
-                <input type="text" class="form-control" id="area_name" name="area_name" placeholder="area_1" />
-            </div>
-
-            <button type="submit" id="export_button" class="btn btn-success">Export area</button>
-        </form>
-        <hr />
-        <button id="import_button" type="button" class="btn btn-primary">Import area</button>
-        <hr />
-        <button id="select_area_button" type="button" class="btn btn-primary">Select area</button>
-        <hr />
-        <button id="build_trajectory_button" type="button" class="btn btn-primary">Build trajectory</button>
-        <hr />
-        <button id="set_loading_point_button" type="button" class="btn btn-primary">Set loading point</button>
-        <button id="undo_button" type="button" class="btn btn-primary">Undo selection</button>
+<div id="waiting_overlay" class="waiting-overlay">
+    <div id="floatingBarsG">
+        <div class="blockG" id="rotateG_01"></div>
+        <div class="blockG" id="rotateG_02"></div>
+        <div class="blockG" id="rotateG_03"></div>
+        <div class="blockG" id="rotateG_04"></div>
+        <div class="blockG" id="rotateG_05"></div>
+        <div class="blockG" id="rotateG_06"></div>
+        <div class="blockG" id="rotateG_07"></div>
+        <div class="blockG" id="rotateG_08"></div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div id="map" class="map"></div>
+    </div>
+    <div class="col-lg-4">
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-draw-tab" data-bs-toggle="tab" data-bs-target="#nav-draw" type="button" role="tab" aria-controls="nav-draw" aria-selected="true">Draw</button>
+                <button class="nav-link" id="nav-management-tab" data-bs-toggle="tab" data-bs-target="#nav-management" type="button" role="tab" aria-controls="nav-management" aria-selected="false">Management</button>
+                <button class="nav-link" id="nav-work-start-tab" data-bs-toggle="tab" data-bs-target="#nav-work-start" type="button" role="tab" aria-controls="nav-work-start" aria-selected="false">Work start</button>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
+
+                <button id="draw_button" type="button" class="btn btn-primary">Draw new area</button>
+                <hr />
+                <button id="undo_button" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24"/>Undo last</button>
+                <hr />
+                <button id="cancel_draw_button" type="button" class="btn btn-primary">Cancel drawing</button>
+                <hr />
+                <button id="clear_all_new_button" type="button" class="btn btn-primary">Clear all new</button>
+                <hr />
+                <button id="clear_last_feature_button" type="button" class="btn btn-primary">Clear last added</button>
+                <hr />
+                <button id="set_loading_point_button" type="button" class="btn btn-primary">Set loading point</button>
+
+            </div>
+            <div class="tab-pane fade" id="nav-management" role="tabpanel" aria-labelledby="nav-management-tab">
+
+                <button id="import_button" type="button" class="btn btn-primary">Import area</button>
+                <hr />
+                <form action="/Map/Export" method="post">
+
+                    <div id="area_name-group" class="form-group">
+                        <label for="area_name">Area name:</label>
+                        <input type="text" class="form-control" id="area_name" name="area_name" placeholder="area_1" />
+                    </div>
+
+                    <button type="submit" id="export_button" class="btn btn-success">Export area</button>
+                </form>
+
+            </div>
+            <div class="tab-pane fade" id="nav-work-start" role="tabpanel" aria-labelledby="nav-work-start-tab">
+
+                <button id="select_area_button" type="button" class="btn btn-primary">Select area</button>
+                <hr />
+                <button id="build_trajectory_button" type="button" class="btn btn-primary">Build trajectory</button>
+
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<div class="row">
+</div>
+

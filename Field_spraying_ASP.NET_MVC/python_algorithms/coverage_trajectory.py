@@ -41,6 +41,7 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
     # Deleting last point, because it is also the first point
     polygon.pop()
 
+    # print(polygon[:4:])
     
     wgs_proj = pyproj.CRS("EPSG:3857")
     lonlat_proj = pyproj.CRS("EPSG:4326")
@@ -61,6 +62,8 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
         utm_polygon.append((res[0],res[1]))
         utm_zones_numbers_and_letters.append((res[2],res[3]))
 
+    # print(utm_polygon[:4:])
+
     coverage_trajectory = calculate_coverage(area_name, utm_polygon, spraying_radius)
 
     zones = list(Counter(utm_zones_numbers_and_letters).keys()) # equals to list(set(words))
@@ -78,7 +81,7 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
     for p in lonlat_coverage_trajectory:
         wgs_coverage_trajectory.append(transform_lonlat_wgs(p[1],p[0]))
 
-    print(wgs_coverage_trajectory)
+    # print(wgs_coverage_trajectory[:4:])
 
     # table.put_item(
     #     Item={
@@ -86,4 +89,4 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
     #         'title': title,
     #         'info': {'plot': plot, 'rating': Decimal(str(rating))}}
     #         )
-    return coverage_trajectory
+    return wgs_coverage_trajectory

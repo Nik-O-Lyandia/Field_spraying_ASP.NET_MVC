@@ -370,3 +370,7 @@ FodyWeavers.xsd
 /python_algorithms/test.py
 /python_algorithms/grid_maker/__area.py
 /python_algorithms/grid_maker/__process_reflex_angle.py
+/Field_spraying_ASP.NET_MVC/python_algorithms/docs
+/Field_spraying_ASP.NET_MVC/python_algorithms/.vscode
+/Field_spraying_ASP.NET_MVC/python_algorithms/maps
+/Field_spraying_ASP.NET_MVC/python_algorithms/output_images

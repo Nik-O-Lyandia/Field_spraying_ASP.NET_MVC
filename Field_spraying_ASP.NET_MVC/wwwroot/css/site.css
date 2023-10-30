@@ -28,6 +28,10 @@ body {
     background-color: lightgreen;
 }
 
+.btn {
+    height: 40px;
+}
+
 /*#map {
     position: absolute;
     width: 1200px;

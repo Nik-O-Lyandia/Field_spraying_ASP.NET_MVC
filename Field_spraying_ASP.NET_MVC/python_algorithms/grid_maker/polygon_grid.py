@@ -144,7 +144,7 @@ def create_grid(polygon, distance):
         for j in range(len(map_np[i])-1,-1,-1):
             if map_np[i][j] == 0:
                 map_np[i][j] = 2
-                print(f"{i} / {j}")
+                # print(f"{i} / {j}")
                 break
         else:
             continue

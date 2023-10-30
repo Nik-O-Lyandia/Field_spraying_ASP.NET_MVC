@@ -24,6 +24,6 @@ def create_inner_polygon(polygon:list, distance, concave_splits: int = 1):
         end_points = split_angle(polygon, points_for_angle, distance, concave_splits)
 
         result = result + end_points
-        print(f"Progress: {i+1} out of {len(polygon)} vertices are done.")
+        # print(f"Progress: {i+1} out of {len(polygon)} vertices are done.")
 
     return result

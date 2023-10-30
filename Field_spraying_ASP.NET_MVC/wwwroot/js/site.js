@@ -1,35 +1,80 @@
-﻿//import "../css/site.css";
+﻿import Feature from '/node_modules/ol/Feature.js';
+//import Polygon from '/node_modules/ol/geom/Polygon.js';
+//import { LineString } from '/node_modules/ol/geom.js';
 import Map from '/node_modules/ol/Map.js';
-//import OSM from '/node_modules/ol/source/OSM.js';
-//import XYZ from '/node_modules/ol/source/XYZ.js';
 import View from '/node_modules/ol/View.js';
 import { fromLonLat } from '/node_modules/ol/proj.js';
 import { Draw, Modify, Snap } from '/node_modules/ol/interaction.js';
 import { BingMaps, Vector as VectorSource } from '/node_modules/ol/source.js';
 import { Tile as TileLayer, Vector as VectorLayer } from '/node_modules/ol/layer.js';
-import { transform, toLonLat } from '/node_modules/ol/proj.js';
-import { LineString } from '/node_modules/ol/geom.js';
-import { getArea, getLength } from '/node_modules/ol/sphere.js';
 import Select from '/node_modules/ol/interaction/Select.js';
-import { Fill, Stroke, Style } from '/node_modules/ol/style.js';
 import { pointerMove } from '/node_modules/ol/events/condition.js';
+import { Fill, Stroke, Style, Icon } from '/node_modules/ol/style.js';
+import { LineString, Polygon, Point } from '/node_modules/ol/geom.js';
+import { forEach } from 'ol/geom/flat/segments';
+//import Point from '/node_modules/ol/geom/Point.js';
 
-import Feature from '/node_modules/ol/Feature.js';
-import Polygon from '/node_modules/ol/geom/Polygon.js';
-import Point from '/node_modules/ol/geom/Point.js';
 
-//const Map = require('/node_modules/ol/Map.js');
+const styleFunction = function (feature) {
+
+    const geometry = feature.getGeometry();
+    const styles = [
+        // linestring
+        new Style({
+            stroke: new Stroke({
+                color: 'rgba(220, 220, 220, 0.8)',
+                width: 2,
+            }),
+            fill: new Fill({
+                color: 'rgba(220, 220, 220, 0.2)',
+            }),
+        }),
+    ];
+
+    if (geometry instanceof LineString) {
+
+        //console.log(geometry);
+
+        geometry.forEachSegment(function (start, end) {
+            const dx = end[0] - start[0];
+            const dy = end[1] - start[1];
+            const rotation = Math.atan2(dy, dx);
+            // arrows
+            styles.push(
+                new Style({
+                    geometry: new Point(end),
+                    image: new Icon({
+                        src: '/data/arrow.png',
+                        anchor: [0.75, 0.5],
+                        width: 16,
+                        height: 16,
+                        rotateWithView: true,
+                        rotation: -rotation,
+                    }),
+                })
+            );
+        });
+    }
+
+    return styles;
+};
+
+function turnOverlayOn() {
+    //document.getElementById('waiting_overlay').classList.toggle("waiting-overlay-showed");
+    //document.getElementById('waiting_overlay').show();
+    //$('#waiting_overlay').show();
+    document.getElementById('waiting_overlay').style.display = 'flex';
+}
+
+function turnOverlayOff() {
+    //$('#waiting_overlay').hide();
+    document.getElementById('waiting_overlay').style.display = 'none';
+}
 
 const source = new VectorSource();
 const vector = new VectorLayer({
     source: source,
-    style: {
-        'fill-color': 'rgba(220, 220, 220, 0.2)',
-        'stroke-color': 'rgba(220, 220, 220, 0.8)',
-        'stroke-width': 2,
-        'circle-radius': 3,
-        'circle-fill-color': '#48a1f0',
-    },
+    style: styleFunction,
 });
 
 const map = new Map({
@@ -94,6 +139,7 @@ const selectPointerMove = new Select({
 });
 
 let selectedFeature = null;
+let featuresAddedThisSession = [];
 
 select.on("select", function (e) {
     if (e.selected.length > 0) {
@@ -108,6 +154,23 @@ select.on("select", function (e) {
 
 });
 
+draw.on("drawend", function (event) {
+    featuresAddedThisSession.push(event.feature);
+});
+
+$.get("/Map/Import")
+    .done(function (data) {
+
+        //console.log(data);
+        const feature = new Feature({
+            geometry: new Polygon([data.coords]),
+            name: data.name,
+        });
+
+        //console.log(feature);
+
+        source.addFeature(feature)
+    });
 
 //********************************************
 //          HANDLE CHANGE EVENTS
@@ -115,7 +178,7 @@ select.on("select", function (e) {
 $(document).ready(function () {
 
     //********************************************
-    //          ACTIVATE DRAW CLICK ACTION
+    //          ACTIVATE DRAW
     //********************************************
     $("#draw_button").click(function () {
         map.addInteraction(draw);
@@ -124,12 +187,37 @@ $(document).ready(function () {
     });
 
     //********************************************
-    //          CANCEL DRAW CLICK ACTION
+    //          UNDO DRAW
+    //********************************************
+    $("#undo_button").click(function () {
+        draw.removeLastPoint();
+    });
+
+    //********************************************
+    //          CANCEL DRAW
     //********************************************
     $("#cancel_draw_button").click(function () {
         map.removeInteraction(draw);
         map.removeInteraction(snap);
         map.removeInteraction(modify);
+    });
+
+
+    //********************************************
+    //          CLEAR LAST ADDED FEATURE
+    //********************************************
+    $("#clear_last_feature_button").click(function () {
+        source.removeFeature(featuresAddedThisSession.pop());
+    });
+
+    //********************************************
+    //          CLEAR ALL NEW FEATURES
+    //********************************************
+    $("#clear_all_new_button").click(function () {
+        for (let i = 0; i < featuresAddedThisSession.length; i++) {
+            source.removeFeature(featuresAddedThisSession[i]);
+        }
+        featuresAddedThisSession = [];
     });
 
     //********************************************
@@ -142,7 +230,7 @@ $(document).ready(function () {
             let firstSourceFeatureGeometry = firstSourceFeature.getGeometry();
             let coords = firstSourceFeatureGeometry.getCoordinates();
 
-            console.log(coords[0]);
+            //console.log(coords[0]);
 
             var formData = JSON.stringify({
                 'area_name': $("#area_name").val(),
@@ -159,10 +247,10 @@ $(document).ready(function () {
                 data: formData,
                 dataType: "json",
                 success: function (data) {
-                    alert(data);
+                    //alert(data);
                 }
             }).done(function (data) {
-                console.log(data);
+                //console.log(data);
             });
         }
         event.preventDefault();
@@ -173,17 +261,19 @@ $(document).ready(function () {
     //********************************************
     $("#import_button").click(function () {
 
-        $.get("/Map/Import", function (data) {
+        $.get("/Map/Import")
+            .done(function (data) {
 
-            const feature = new Feature({
-                geometry: new Polygon([data.coords]),
-                name: data.name,
+                //console.log(data);
+                const feature = new Feature({
+                    geometry: new Polygon([data.coords]),
+                    name: data.name,
+                });
+
+                //console.log(feature);
+
+                source.addFeature(feature)
             });
-
-            console.log(feature);
-
-            source.addFeature(feature)
-        });
     });
 
     //********************************************
@@ -206,33 +296,25 @@ $(document).ready(function () {
 
             //console.log(selectedFeature);
 
-            var formData = JSON.stringify({
-                'area_name': selectedFeatureName
-            });
+            turnOverlayOn();
 
-        //$.ajax({
-        //    type: "POST",
-        //    url: "/Map/Export",
-        //    headers: {
-        //        'Accept': 'application/json',
-        //        'Content-Type': 'application/json'
-        //    },
-        //    data: formData,
-        //    dataType: "json",
-        //    success: function (data) {
-        //        alert(data);
-        //    }
-        //}).done(function (data) {
-        //    console.log(data);
-        //});
+            $.get("/Map/Build_trajectory", { area_name: selectedFeatureName, spraying_radius: 15})
+                .done(function (coords) {
 
-        //event.preventDefault();
+                    //console.log(coords);
+                    const feature = new Feature({
+                        geometry: new LineString(coords),
+                    });
+
+                    source.addFeature(feature)
+
+                    turnOverlayOff();
+
+                });
+
+        } else {
+            alert("Please, select area first.")
         }
     });
 });
 
-
-//    //    (1)[3760068.9670060794,   6784271.42795164]               [3760068.1628284436, 6784270.863947619]
-//    //    (2)[3759978.829972721,    6784266.898452477] -90; -5      [3759980.5543891885, 6784264.006500738]
-//    //    (3)[3759976.112273223,    6784422.260273792] -2;  +156
-//    //    (1)[3760068.9670060794,   6784271.42795164]  +92; -151
