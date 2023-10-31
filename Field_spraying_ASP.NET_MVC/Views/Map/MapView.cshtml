@@ -34,7 +34,9 @@
         <div class="tab-content" id="nav-tabContent">
             <div class="tab-pane fade show active" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
 
-                <button id="draw_button" type="button" class="btn btn-primary">Draw new area</button>
+                <button id="draw_polygon_button" type="button" class="btn btn-primary">Draw area</button>
+                <button id="draw_point_button" type="button" class="btn btn-primary">Add loading point</button>
+                <button id="select_box_button" type="button" class="btn btn-primary">SELECT BOX</button>
                 <hr />
                 <button id="undo_button" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24"/>Undo last</button>
                 <hr />
@@ -51,11 +53,18 @@
 
                 <button id="import_button" type="button" class="btn btn-primary">Import area</button>
                 <hr />
-                <form action="/Map/Export" method="post">
+                <button id="select_area_button" type="button" class="btn btn-primary">Select area</button>
+                <hr />
+                <form id="export_form" action="/Map/Export" method="post" style="display: none">
 
-                    <div id="area_name-group" class="form-group">
+                    <div id="area_name-group" class="form-group" style="display: none">
                         <label for="area_name">Area name:</label>
                         <input type="text" class="form-control" id="area_name" name="area_name" placeholder="area_1" />
+                    </div>
+                    
+                    <div id="point_name-group" class="form-group" style="display: none">
+                        <label for="point_name">Loading point name:</label>
+                        <input type="text" class="form-control" id="point_name" name="point_name" placeholder="point_1" />
                     </div>
 
                     <button type="submit" id="export_button" class="btn btn-success">Export area</button>

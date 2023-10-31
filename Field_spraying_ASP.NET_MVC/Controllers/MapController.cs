@@ -40,26 +40,64 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
         [HttpPost]      // POST /map/import
         public async Task<IActionResult> Export([FromBody] JsonElement formData)
         {
-            //Guid uuid = Guid.NewGuid();
-            //string uuidAsString = uuid.ToString();
-            var areaName = formData.GetProperty("area_name").ToString();
-            var coords = formData.GetProperty("coords").Deserialize<double[][]>();
-            
+            Area area = null;
+            Point point = null;
 
-            Area area = new Area() {
-                //Id = uuidAsString,
-                Name = areaName,
-                Coords = coords
-            };
-
-            await _dynamoDBContext.SaveAsync(area);
-
-            string list = "";
-            for (int i = 0; i < coords.Length; i++)
+            foreach (var jsonProperty in formData.EnumerateObject())
             {
-                list = list + " | " + String.Join(",", coords[i]);
+                var propertyName = jsonProperty.Name;
+                var propertyValue = jsonProperty.Value;
+
+                if (propertyName == "area")
+                {
+                    area = new Area();
+                    area.Name = propertyValue.GetProperty("name").ToString();
+                    area.Coords = propertyValue.GetProperty("coords").Deserialize<double[][]>();
+                }
+
+                if (propertyName == "point")
+                {
+                    point = new Point();
+                    point.Name = propertyValue.GetProperty("name").ToString();
+                    point.Coords = propertyValue.GetProperty("coords").Deserialize<double[][]>();
+                }
             }
-            return Ok("EXPORT SUCCESSFUL : " + list);
+
+            if (area != null)
+            {
+                List<ScanCondition> conditions = new List<ScanCondition>();
+                conditions.Add(new ScanCondition("Name", Amazon.DynamoDBv2.DocumentModel.ScanOperator.Equal, area.Name));
+                var search = _dynamoDBContext.ScanAsync<Area>(conditions);
+                var areas = await search.GetNextSetAsync().ConfigureAwait(false);
+
+                if (areas.Count == 0 || areas == null)
+                {
+                    await _dynamoDBContext.SaveAsync(area);
+                }
+                else
+                {
+                    return BadRequest("Area with such name already exists.");
+                }
+            }
+
+            if (point != null)
+            {
+                List<ScanCondition> conditions = new List<ScanCondition>();
+                conditions.Add(new ScanCondition("Name", Amazon.DynamoDBv2.DocumentModel.ScanOperator.Equal, point.Name));
+                var search = _dynamoDBContext.ScanAsync<Point>(conditions);
+                var areas = await search.GetNextSetAsync().ConfigureAwait(false);
+
+                if (areas.Count == 0 || areas == null)
+                {
+                    await _dynamoDBContext.SaveAsync(area);
+                }
+                else
+                {
+                    return BadRequest("Point with such name already exists.");
+                }
+            }
+
+            return Ok();
         }
 
         [Route("Import")]
@@ -77,7 +115,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             string contentRootPath = _env.ContentRootPath;
             string cppFilePath = contentRootPath + @"\python_algorithms\main.py";
             float r;
-            
+
             if (float.TryParse(spraying_radius, out r))
             {
                 CmdRun cmdRun = new CmdRun();
