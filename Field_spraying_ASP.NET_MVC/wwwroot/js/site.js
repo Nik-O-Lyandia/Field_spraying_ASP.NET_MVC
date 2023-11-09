@@ -67,10 +67,10 @@ const styleFunction = function (feature) {
     return styles;
 };
 
-function addDrawInteraction(draw_type) {
+function addDrawInteraction(drawType) {
     draw = new Draw({
         source: source,
-        type: draw_type,
+        type: drawType,
     });
 
     draw.on("drawend", function (event) {
@@ -89,10 +89,59 @@ function turnOverlayOff() {
     document.getElementById('waiting_overlay').style.display = 'none';
 }
 
-function removeInteractions() {
+function removeDrawInteractions() {
     map.removeInteraction(draw);
     map.removeInteraction(snap);
     map.removeInteraction(modify);
+}
+
+function removeSelectInteraction() {
+    selectedFeatures = null;
+    map.removeInteraction(select);
+    formElement.style.display = "none";
+}
+
+function importMap(data) {
+    const areas = data.areas;
+    const points = data.points;
+
+    const features = source.getFeatures();
+
+    let feature = null;
+
+    for (let i = 0; i < areas.length; i++) {
+        feature = new Feature({
+            geometry: new Polygon([areas[i].coords]),
+            name: areas[i].name,
+        });
+
+        let addFeaturePermission = true;
+        for (let j = 0; j < features.length; j++) {
+            if (feature.get('name') == features[j].get('name')) {
+                addFeaturePermission = false
+            }
+        }
+        if (addFeaturePermission) {
+            source.addFeature(feature);
+        }
+    }
+
+    for (let i = 0; i < points.length; i++) {
+        feature = new Feature({
+            geometry: new Point(points[i].coords),
+            name: points[i].name,
+        });
+
+        let addFeaturePermission = true;
+        for (let j = 0; j < features.length; j++) {
+            if (feature.get('name') == features[j].get('name')) {
+                addFeaturePermission = false
+            }
+        }
+        if (addFeaturePermission) {
+            source.addFeature(feature);
+        }
+    }
 }
 
 //********************************************
@@ -122,18 +171,15 @@ const map = new Map({
     }),
 });
 
-const modify = new Modify({ source: source });
-
-//let draw, snap; // global so we can remove them later
 let draw;
-
+const modify = new Modify({ source: source });
 let snap = new Snap({ source: source });
 
 
 //********************************************
 //          SELECTING AREA
 //********************************************
-//let select = null; // ref to currently selected interaction
+let exportSelectActivated = false; // was select activated in Management section or not
 
 const selected = new Style({
     fill: new Fill({
@@ -181,94 +227,6 @@ let featuresAddedThisSession = [];
 
 
 
-
-
-
-
-//const selectedFeatures = select.getFeatures();
-
-//// a DragBox interaction used to select features by drawing boxes
-//const dragBox = new DragBox({
-//    condition: platformModifierKeyOnly,
-//});
-
-//dragBox.on('boxend', function () {
-//    const boxExtent = dragBox.getGeometry().getExtent();
-
-//    // if the extent crosses the antimeridian process each world separately
-//    const worldExtent = map.getView().getProjection().getExtent();
-//    const worldWidth = getWidth(worldExtent);
-//    const startWorld = Math.floor((boxExtent[0] - worldExtent[0]) / worldWidth);
-//    const endWorld = Math.floor((boxExtent[2] - worldExtent[0]) / worldWidth);
-
-//    for (let world = startWorld; world <= endWorld; ++world) {
-//        const left = Math.max(boxExtent[0] - world * worldWidth, worldExtent[0]);
-//        const right = Math.min(boxExtent[2] - world * worldWidth, worldExtent[2]);
-//        const extent = [left, boxExtent[1], right, boxExtent[3]];
-
-//        const boxFeatures = source
-//            .getFeaturesInExtent(extent)
-//            .filter(
-//                (feature) =>
-//                    !selectedFeatures.getArray().includes(feature) &&
-//                    feature.getGeometry().intersectsExtent(extent)
-//            );
-
-//        // features that intersect the box geometry are added to the
-//        // collection of selected features
-
-//        // if the view is not obliquely rotated the box geometry and
-//        // its extent are equalivalent so intersecting features can
-//        // be added directly to the collection
-//        const rotation = map.getView().getRotation();
-//        const oblique = rotation % (Math.PI / 2) !== 0;
-
-//        // when the view is obliquely rotated the box extent will
-//        // exceed its geometry so both the box and the candidate
-//        // feature geometries are rotated around a common anchor
-//        // to confirm that, with the box geometry aligned with its
-//        // extent, the geometries intersect
-//        if (oblique) {
-//            const anchor = [0, 0];
-//            const geometry = dragBox.getGeometry().clone();
-//            geometry.translate(-world * worldWidth, 0);
-//            geometry.rotate(-rotation, anchor);
-//            const extent = geometry.getExtent();
-//            boxFeatures.forEach(function (feature) {
-//                const geometry = feature.getGeometry().clone();
-//                geometry.rotate(-rotation, anchor);
-//                if (geometry.intersectsExtent(extent)) {
-//                    selectedFeatures.push(feature);
-//                }
-//            });
-//        } else {
-//            selectedFeatures.extend(boxFeatures);
-//        }
-//    }
-//    console.log(selectedFeatures);
-//});
-
-//// clear selection when drawing a new box and when clicking on the map
-//dragBox.on('boxstart', function () {
-//    selectedFeatures.clear();
-//});
-
-//const infoBox = document.getElementById('info');
-
-//selectedFeatures.on(['add', 'remove'], function () {
-//    const names = selectedFeatures.getArray().map((feature) => {
-//        return feature.get('ECO_NAME');
-//    });
-//    if (names.length > 0) {
-//        infoBox.innerHTML = names.join(', ');
-//    } else {
-//        infoBox.innerHTML = 'None';
-//    }
-//});
-
-
-
-
 const formElement = document.getElementById("export_form");
 
 
@@ -288,7 +246,8 @@ select.on("select", function (e) {
         geoms.push(selectedFeatures.item(i).getGeometry());
     }
 
-    if (selectedFeatures.getLength() <= 2) {
+    if ((selectedFeatures.getLength() <= 2 && !exportSelectActivated) ||
+        (selectedFeatures.getLength() <= 1 && exportSelectActivated)) {
         formElement.style.display = "block";
         var formInnerElements = formElement.getElementsByClassName("form-group");
 
@@ -303,7 +262,7 @@ select.on("select", function (e) {
             }
 
             if (selectedFeatures.getLength() == 2) {
-                if ((geoms[0] instanceof Polygon && geoms[1] instanceof Polygon) || (geoms[0] instanceof Point && geoms[1] instanceof Point)) {
+                if ((geoms[0] instanceof Polygon || geoms[1] instanceof Polygon) && (geoms[0] instanceof Point || geoms[1] instanceof Point)) {
                     if ((formInnerElements[i].id == "area_name-group" && (geoms[0] instanceof Polygon || geoms[1] instanceof Polygon)) ||
                         (formInnerElements[i].id == "point_name-group" && (geoms[0] instanceof Point || geoms[1] instanceof Point))) {
                         formInnerElements[i].style.display = "block";
@@ -312,41 +271,53 @@ select.on("select", function (e) {
                     }
                 } else {
                     alert("Selected features must not be the same type.");
+                    removeSelectInteraction();
+                    break;
                 }
             }
         }
     } else {
-
-        alert("Select no more than 2 features.");
+        let featuresNum = exportSelectActivated ? "1" : "2";
+        alert("Select no more than " + featuresNum + " features.");
+        removeSelectInteraction();
     }
 
     if (e.deselected.length > 0 && e.selected.length == 0 && selectedFeatures.getLength() == 0) {
-        selectedFeatures = null;
-        map.removeInteraction(select);
-        formElement.style.display = "none";
+        removeSelectInteraction();
     }
 
 });
 
-
 $.get("/Map/Import")
     .done(function (data) {
-
-        //console.log(data);
-        const feature = new Feature({
-            geometry: new Polygon([data.coords]),
-            name: data.name,
-        });
-
-        //console.log(feature);
-
-        source.addFeature(feature)
+        importMap(data)
     });
+
+const importInterval = setInterval(function () {
+$.get("/Map/Import")
+    .done(function (data) {
+        importMap(data)
+    });
+}, 5000);
 
 //********************************************
 //          HANDLE CHANGE EVENTS
 //********************************************
 $(document).ready(function () {
+
+    $("#nav-draw-tab").on('hidden.bs.tab', function (event) {
+        //event.target // newly activated tab
+        //event.relatedTarget // previous active tab
+        removeDrawInteractions();
+    });
+
+    $("#nav-management-tab").on('hidden.bs.tab', function (event) {
+        removeSelectInteraction();
+    });
+
+    $("#nav-work-start-tab").on('hidden.bs.tab', function () {
+        removeSelectInteraction();
+    });
 
     //********************************************
     //          DRAWING SECTION
@@ -354,7 +325,7 @@ $(document).ready(function () {
 
     // ----- DRAW POLYGON -----
     $("#draw_polygon_button").click(function () {
-        removeInteractions();
+        removeDrawInteractions();
         addDrawInteraction('Polygon');
         map.addInteraction(snap);
         map.addInteraction(modify);
@@ -362,7 +333,7 @@ $(document).ready(function () {
 
     // ----- DRAW LOADING POINT -----
     $("#draw_point_button").click(function () {
-        removeInteractions();
+        removeDrawInteractions();
         addDrawInteraction('Point');
         map.addInteraction(modify);
     });
@@ -372,17 +343,9 @@ $(document).ready(function () {
         draw.removeLastPoint();
     });
 
-    //// ----- UNDO LAST ACTION -----
-    //$("#select_box_button").click(function () {
-    //    removeInteractions();
-
-    //    map.addInteraction(dragBox);
-
-    //});
-
     // ----- CANCEL DRAW -----
     $("#cancel_draw_button").click(function () {
-        removeInteractions();
+        removeDrawInteractions();
     });
 
 
@@ -403,9 +366,16 @@ $(document).ready(function () {
     //          MANAGMENT SECTION
     //********************************************
 
+    // ----- AREA SELECTION -----
+    $("#export_select_button").click(function () {
+        exportSelectActivated = true;
+        map.addInteraction(selectPointerMove);
+        map.addInteraction(select);
+
+    });
+
     // ----- EXPORT AREA ACTION -----
     $("form").submit(function (event) {
-        //let sourceFeatures = source.getFeatures();
 
         var formDataObject = {};
 
@@ -422,16 +392,16 @@ $(document).ready(function () {
 
                 for (let i = 0; i < geoms.length; i++) {
                     if (geoms[i] instanceof Polygon) {
-                        let area_obj = {};
-                        area_obj.name = $("#area_name").val() != null ? $("#area_name").val() : null;
-                        area_obj.coords = geoms[i].getCoordinates()[0];
-                        formDataObject.area = area_obj;
+                        let areaObj = {};
+                        areaObj.name = $("#area_name").val() != null ? $("#area_name").val() : null;
+                        areaObj.coords = geoms[i].getCoordinates()[0];
+                        formDataObject.area = areaObj;
                     }
                     if (geoms[i] instanceof Point) {
-                        let point_obj = {};
-                        point_obj.name = $("#point_name").val() != null ? $("#point_name").val() : null;
-                        point_obj.coords = geoms[i].getCoordinates()[0];
-                        formDataObject.point = point_obj;
+                        let pointObj = {};
+                        pointObj.name = $("#point_name").val() != null ? $("#point_name").val() : null;
+                        pointObj.coords = geoms[i].getCoordinates();
+                        formDataObject.point = pointObj;
                     }
                 }
 
@@ -469,16 +439,7 @@ $(document).ready(function () {
 
         $.get("/Map/Import")
             .done(function (data) {
-
-                //console.log(data);
-                const feature = new Feature({
-                    geometry: new Polygon([data.coords]),
-                    name: data.name,
-                });
-
-                //console.log(feature);
-
-                source.addFeature(feature)
+                importMap(data);
             });
     });
 

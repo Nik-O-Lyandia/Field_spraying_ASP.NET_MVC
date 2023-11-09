@@ -43,6 +43,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             Area area = null;
             Point point = null;
 
+            string result = "";
+
             foreach (var jsonProperty in formData.EnumerateObject())
             {
                 var propertyName = jsonProperty.Name;
@@ -59,7 +61,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 {
                     point = new Point();
                     point.Name = propertyValue.GetProperty("name").ToString();
-                    point.Coords = propertyValue.GetProperty("coords").Deserialize<double[][]>();
+                    point.Coords = propertyValue.GetProperty("coords").Deserialize<double[]>();
                 }
             }
 
@@ -73,6 +75,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 if (areas.Count == 0 || areas == null)
                 {
                     await _dynamoDBContext.SaveAsync(area);
+                    result += "Area was added\n";
                 }
                 else
                 {
@@ -85,11 +88,12 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 List<ScanCondition> conditions = new List<ScanCondition>();
                 conditions.Add(new ScanCondition("Name", Amazon.DynamoDBv2.DocumentModel.ScanOperator.Equal, point.Name));
                 var search = _dynamoDBContext.ScanAsync<Point>(conditions);
-                var areas = await search.GetNextSetAsync().ConfigureAwait(false);
+                var points = await search.GetNextSetAsync().ConfigureAwait(false);
 
-                if (areas.Count == 0 || areas == null)
+                if (points.Count == 0 || points == null)
                 {
-                    await _dynamoDBContext.SaveAsync(area);
+                    await _dynamoDBContext.SaveAsync(point);
+                    result += "Point was added\n";
                 }
                 else
                 {
@@ -97,15 +101,27 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 }
             }
 
-            return Ok();
+            return Ok(result);
         }
 
         [Route("Import")]
         [HttpGet]   // GET /map/import
         public async Task<IActionResult> Import()
         {
-            var area = await _dynamoDBContext.LoadAsync<Area>("area_1");
-            return Ok(area);
+            //var area = await _dynamoDBContext.LoadAsync<Area>("area_1");
+
+            var conditions = new List<ScanCondition>();
+            // you can add scan conditions, or leave empty
+            var allAreas = await _dynamoDBContext.ScanAsync<Area>(conditions).GetRemainingAsync();
+            var allPoints = await _dynamoDBContext.ScanAsync<Point>(conditions).GetRemainingAsync();
+
+            //var allAreasLson = JsonSerializer.Serialize<List<Area>>(allAreas);
+            //var allPointsLson = JsonSerializer.Serialize<List<Point>>(allPoints);
+
+            return Json(new {
+                areas = allAreas,
+                points = allPoints
+            });
         }
 
         [Route("Build_trajectory")]
