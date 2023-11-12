@@ -8,19 +8,41 @@
 
 html {
     position: relative;
-    min-height: 100%;
+    height: 100%;
 }
 
 html,
 body {
     font-size: 14px;
     margin: 0;
-    height: 100%;
+    background-color: #000020;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.navbar {
+    background-color: #000030;
+    color: white;
+}
+
+footer {
+    width: 100%;
+    line-height: 60px;
+    flex-grow: 0;
+    flex-shrink: 1;
+}
+
+.container-fluid.main {
+    flex: 1;
 }
 
 .map {
     width: 100%;
-    height: 600px;
+    height: 100%;
+    display: block;
+    border: 2px solid red;
 }
 
 .form {
@@ -31,9 +53,3 @@ body {
 .btn {
     height: 40px;
 }
-
-/*#map {
-    position: absolute;
-    width: 1200px;
-    height: 800px;
-}*/

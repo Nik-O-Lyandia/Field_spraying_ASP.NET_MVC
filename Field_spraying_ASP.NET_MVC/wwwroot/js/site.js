@@ -159,7 +159,7 @@ const map = new Map({
     layers: [
         new TileLayer({
             source: new BingMaps({
-                key: 'AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC',
+                key: '111', //AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC
                 imagerySet: 'Aerial',
             }),
         }),
