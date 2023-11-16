@@ -6,6 +6,8 @@ using Field_spraying_ASP.NET_MVC.Models;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net;
+using Amazon.DynamoDBv2;
+using DynamoDb.Libs.DynamoDb;
 
 namespace Field_spraying_ASP.NET_MVC.Controllers
 {
@@ -13,12 +15,12 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
     [ApiController]
     public class MapController : Controller
     {
-        private readonly IDynamoDBContext _dynamoDBContext;
+        private readonly IDynamoDb _dynamoDb;
         private readonly IWebHostEnvironment _env;
 
-        public MapController(IDynamoDBContext dynamoDBContext, IWebHostEnvironment env)
+        public MapController(IDynamoDb dynamoDb, IWebHostEnvironment env)
         {
-            _dynamoDBContext = dynamoDBContext;
+            _dynamoDb = dynamoDb;
             _env = env;
         }
 
@@ -32,7 +34,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
         [HttpGet]   // GET /map/get/{name}
         public async Task<IActionResult> Get(string name)
         {
-            var area = await _dynamoDBContext.LoadAsync(name);
+            var area = await _dynamoDb.GetObject<Area>(name);
 
             return Ok(area);
         }
@@ -68,14 +70,10 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             if (area != null)
             {
-                List<ScanCondition> conditions = new List<ScanCondition>();
-                conditions.Add(new ScanCondition("Name", Amazon.DynamoDBv2.DocumentModel.ScanOperator.Equal, area.Name));
-                var search = _dynamoDBContext.ScanAsync<Area>(conditions);
-                var areas = await search.GetNextSetAsync().ConfigureAwait(false);
+                bool success = await _dynamoDb.PutObject<Area>(area);
 
-                if (areas.Count == 0 || areas == null)
+                if (success)
                 {
-                    await _dynamoDBContext.SaveAsync(area);
                     result += "Area was added\n";
                 }
                 else
@@ -86,14 +84,10 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             if (point != null)
             {
-                List<ScanCondition> conditions = new List<ScanCondition>();
-                conditions.Add(new ScanCondition("Name", Amazon.DynamoDBv2.DocumentModel.ScanOperator.Equal, point.Name));
-                var search = _dynamoDBContext.ScanAsync<Point>(conditions);
-                var points = await search.GetNextSetAsync().ConfigureAwait(false);
+                bool success = await _dynamoDb.PutObject<Point>(point);
 
-                if (points.Count == 0 || points == null)
+                if (success)
                 {
-                    await _dynamoDBContext.SaveAsync(point);
                     result += "Point was added\n";
                 }
                 else
@@ -109,15 +103,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
         [HttpGet]   // GET /map/import
         public async Task<IActionResult> Import()
         {
-            //var area = await _dynamoDBContext.LoadAsync<Area>("area_1");
-
-            var conditions = new List<ScanCondition>();
-            // you can add scan conditions, or leave empty
-            var allAreas = await _dynamoDBContext.ScanAsync<Area>(conditions).GetRemainingAsync();
-            var allPoints = await _dynamoDBContext.ScanAsync<Point>(conditions).GetRemainingAsync();
-
-            //var allAreasLson = JsonSerializer.Serialize<List<Area>>(allAreas);
-            //var allPointsLson = JsonSerializer.Serialize<List<Point>>(allPoints);
+            var allAreas = await _dynamoDb.GetAllObjects<Area>();
+            var allPoints = await _dynamoDb.GetAllObjects<Point>();
 
             return Json(new {
                 areas = allAreas,
@@ -129,8 +116,6 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
         [HttpPost]      // POST /map/import
         public async Task<IActionResult> DeleteFeature([FromBody] JsonElement data)
         {
-            Area deletedArea = null;
-            Point deletedPoint = null;
             string result = "";
 
             var featureName = data.GetProperty("name").GetString();
@@ -140,9 +125,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             {
                 if (featureType == "polygon")
                 {
-                    await _dynamoDBContext.DeleteAsync<Area>(featureName);
-                    deletedArea = await _dynamoDBContext.LoadAsync<Area>(featureName);
-                    if (deletedArea == null)
+                    bool success = await _dynamoDb.DeleteObject<Area>(featureName);
+                    if (success)
                     {
                         result = "Feature is deleted";
                         return Ok(result);
@@ -155,9 +139,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 }
                 else if (featureType == "point")
                 {
-                    await _dynamoDBContext.DeleteAsync<Point>(featureName);
-                    deletedPoint = await _dynamoDBContext.LoadAsync<Point>(featureName);
-                    if (deletedArea == null)
+                    bool success = await _dynamoDb.DeleteObject<Point>(featureName);
+                    if (success)
                     {
                         result = "Feature is deleted";
                         return Ok(result);

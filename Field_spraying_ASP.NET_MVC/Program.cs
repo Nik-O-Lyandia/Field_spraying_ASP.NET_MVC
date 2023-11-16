@@ -4,6 +4,8 @@ using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
+using DynamoDb.Libs.DynamoDb;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +22,8 @@ builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
     return new AmazonDynamoDBClient(clientConfig);
 });
 
-builder.Services.AddScoped<IDynamoDBContext, DynamoDBContext>();
+builder.Services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
+builder.Services.AddSingleton<IDynamoDb, DynamoDb.Libs.DynamoDb.DynamoDb>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -28,6 +31,9 @@ builder.Services.AddControllersWithViews();
 //builder.Services.AddRazorPages();
 
 var app = builder.Build();
+
+app.Services.GetService<IDynamoDb>().CreateTables();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
