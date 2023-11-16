@@ -97,8 +97,9 @@ function removeDrawInteractions() {
 
 function removeSelectInteraction() {
     selectedFeatures = null;
-    map.removeInteraction(select);
+    map.removeInteraction(management_select);
     formElement.style.display = "none";
+    deleteButton.style.display = "none";
 }
 
 function importMap(data) {
@@ -159,7 +160,7 @@ const map = new Map({
     layers: [
         new TileLayer({
             source: new BingMaps({
-                key: '111', //AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC
+                key: 'AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC', //AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC
                 imagerySet: 'Aerial',
             }),
         }),
@@ -214,7 +215,8 @@ const hovered = new Style({
 });
 
 // select interaction working on "singleclick"
-const select = new Select({ style: selected });
+const management_select = new Select({ style: selected });
+const work_select = new Select({ style: selected });
 
 // select interaction working on "pointermove"
 const selectPointerMove = new Select({
@@ -228,13 +230,14 @@ let featuresAddedThisSession = [];
 
 
 const formElement = document.getElementById("export_form");
+const deleteButton = document.getElementById("delete_feature_button");
 
 
 //********************************************
 //        HANDLE FUNCTIONS SECTION
 //********************************************
 
-select.on("select", function (e) {
+management_select.on("select", function (e) {
     map.removeInteraction(selectPointerMove);
     selectedFeatures = e.target.getFeatures();
 
@@ -246,8 +249,7 @@ select.on("select", function (e) {
         geoms.push(selectedFeatures.item(i).getGeometry());
     }
 
-    if ((selectedFeatures.getLength() <= 2 && !exportSelectActivated) ||
-        (selectedFeatures.getLength() <= 1 && exportSelectActivated)) {
+    if (selectedFeatures.getLength() <= 2) {
         formElement.style.display = "block";
         var formInnerElements = formElement.getElementsByClassName("form-group");
 
@@ -256,9 +258,12 @@ select.on("select", function (e) {
                 if ((formInnerElements[i].id == "area_name-group" && geoms[0] instanceof Polygon) ||
                     (formInnerElements[i].id == "point_name-group" && geoms[0] instanceof Point)) {
                     formInnerElements[i].style.display = "block";
+                    deleteButton.style.display = "block";
                 } else {
                     formInnerElements[i].style.display = "none";
                 }
+            } else {
+                deleteButton.style.display = "none";
             }
 
             if (selectedFeatures.getLength() == 2) {
@@ -277,6 +282,8 @@ select.on("select", function (e) {
             }
         }
     } else {
+        formElement.style.display = "none";
+        deleteButton.style.display = "none";
         let featuresNum = exportSelectActivated ? "1" : "2";
         alert("Select no more than " + featuresNum + " features.");
         removeSelectInteraction();
@@ -288,6 +295,62 @@ select.on("select", function (e) {
 
 });
 
+//work_select.on("select", function (e) {
+//    map.removeInteraction(selectPointerMove);
+//    selectedFeatures = e.target.getFeatures();
+
+//    //console.log(e.selected);
+//    //console.log(e);
+
+//    let geoms = [];
+//    for (let i = 0; i < selectedFeatures.getLength(); i++) {
+//        geoms.push(selectedFeatures.item(i).getGeometry());
+//    }
+
+//    if ((selectedFeatures.getLength() <= 2 && !exportSelectActivated) ||
+//        (selectedFeatures.getLength() <= 1 && exportSelectActivated)) {
+
+//        formElement.style.display = "block";
+//        var formInnerElements = formElement.getElementsByClassName("form-group");
+
+//        for (let i = 0; i < formInnerElements.length; i++) {
+//            if (selectedFeatures.getLength() == 1) {
+//                if ((formInnerElements[i].id == "area_name-group" && geoms[0] instanceof Polygon) ||
+//                    (formInnerElements[i].id == "point_name-group" && geoms[0] instanceof Point)) {
+//                    formInnerElements[i].style.display = "block";
+//                } else {
+//                    formInnerElements[i].style.display = "none";
+//                }
+//            }
+
+//            if (selectedFeatures.getLength() == 2) {
+//                if ((geoms[0] instanceof Polygon || geoms[1] instanceof Polygon) && (geoms[0] instanceof Point || geoms[1] instanceof Point)) {
+//                    if ((formInnerElements[i].id == "area_name-group" && (geoms[0] instanceof Polygon || geoms[1] instanceof Polygon)) ||
+//                        (formInnerElements[i].id == "point_name-group" && (geoms[0] instanceof Point || geoms[1] instanceof Point))) {
+//                        formInnerElements[i].style.display = "block";
+//                    } else {
+//                        formInnerElements[i].style.display = "none";
+//                    }
+//                } else {
+//                    alert("Selected features must not be the same type.");
+//                    removeSelectInteraction();
+//                    break;
+//                }
+//            }
+//        }
+//    } else {
+//        let featuresNum = exportSelectActivated ? "1" : "2";
+//        alert("Select no more than " + featuresNum + " features.");
+//        removeSelectInteraction();
+//    }
+
+//    if (e.deselected.length > 0 && e.selected.length == 0 && selectedFeatures.getLength() == 0) {
+//        removeSelectInteraction();
+//    }
+
+//});
+
+// ----- MAP AUTOUPDATE -----
 $.get("/Map/Import")
     .done(function (data) {
         importMap(data)
@@ -366,11 +429,20 @@ $(document).ready(function () {
     //          MANAGMENT SECTION
     //********************************************
 
+    // ----- IMPORT AREA ACTION -----
+    $("#import_button").click(function () {
+
+        $.get("/Map/Import")
+            .done(function (data) {
+                importMap(data);
+            });
+    });
+
     // ----- AREA SELECTION -----
-    $("#export_select_button").click(function () {
+    $("#management_select_button").click(function () {
         exportSelectActivated = true;
         map.addInteraction(selectPointerMove);
-        map.addInteraction(select);
+        map.addInteraction(management_select);
 
     });
 
@@ -385,6 +457,9 @@ $(document).ready(function () {
                 geoms.push(selectedFeatures.item(i).getGeometry());
             }
 
+            let areaName = '';
+            let pointName = '';
+
             if ((geoms.length == 2 && geoms[0] instanceof Polygon && geoms[1] instanceof Point) ||
                 (geoms.length == 2 && geoms[0] instanceof Point && geoms[1] instanceof Polygon) ||
                 (geoms.length == 1 && geoms[0] instanceof Point) ||
@@ -393,13 +468,15 @@ $(document).ready(function () {
                 for (let i = 0; i < geoms.length; i++) {
                     if (geoms[i] instanceof Polygon) {
                         let areaObj = {};
-                        areaObj.name = $("#area_name").val() != null ? $("#area_name").val() : null;
+                        areaName = $("#area_name").val() != null ? $("#area_name").val() : null;
+                        areaObj.name = areaName;
                         areaObj.coords = geoms[i].getCoordinates()[0];
                         formDataObject.area = areaObj;
                     }
                     if (geoms[i] instanceof Point) {
                         let pointObj = {};
-                        pointObj.name = $("#point_name").val() != null ? $("#point_name").val() : null;
+                        pointName = $("#point_name").val() != null ? $("#point_name").val() : null
+                        pointObj.name = pointName;
                         pointObj.coords = geoms[i].getCoordinates();
                         formDataObject.point = pointObj;
                     }
@@ -422,11 +499,22 @@ $(document).ready(function () {
                 },
                 data: formData,
                 dataType: "json",
-                success: function (data) {
-                    //alert(data);
+                success: function (response) {
+                    console.log(response);
+                    for (let i = 0; i < geoms.length; i++) {
+                        if (geoms[i] instanceof Polygon) {
+                            selectedFeatures.item(i).set('name', areaName);
+                        }
+                        if (geoms[i] instanceof Point) {
+                            selectedFeatures.item(i).set('name', pointName);
+                        }
+                    }
+                    removeSelectInteraction();
+                },
+                error: function (response) {
+                    console.log(response);
+                    alert("Export failed");
                 }
-            }).done(function (data) {
-                //console.log(data);
             });
         } else {
             alert("Please select features to export.");
@@ -434,13 +522,52 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    // ----- IMPORT AREA ACTION -----
-    $("#import_button").click(function () {
+    // ----- DELETE FEATURE FROM DB -----
+    $("#delete_feature_button").click(function () {
 
-        $.get("/Map/Import")
-            .done(function (data) {
-                importMap(data);
+        if (selectedFeatures != null) {
+
+            let dataObject = {};
+
+            let feature = selectedFeatures.item(0);
+            let featureGeom = feature.getGeometry();
+
+            dataObject.name = selectedFeatures.item(0).get("name");
+
+            if (featureGeom instanceof Polygon) {
+                dataObject.objType = "polygon";
+            }
+
+            if (featureGeom instanceof Point) {
+                dataObject.objType = "point";
+            }
+
+            let data = JSON.stringify(dataObject);
+
+            $.ajax({
+                type: "POST",
+                url: "/Map/delete-feature",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                    source.removeFeature(feature);
+                    removeSelectInteraction();
+                },
+                error: function (response) {
+                    console.log(response);
+                    alert("Feature is not in DB");
+                },
             });
+
+        } else {
+            alert("Please select features to export.");
+        }
+
     });
 
     //********************************************
@@ -451,7 +578,7 @@ $(document).ready(function () {
     $("#select_area_button").click(function () {
 
         map.addInteraction(selectPointerMove);
-        map.addInteraction(select);
+        map.addInteraction(work_select);
 
     });
 
@@ -465,7 +592,7 @@ $(document).ready(function () {
 
             turnOverlayOn();
             if (selectedFeatureName != none) {
-                $.get("/Map/Build_trajectory", { area_name: selectedFeatureName, spraying_radius: 15 })
+                $.get("/Map/build-trajectory", { area_name: selectedFeatureName, spraying_radius: 15 })
                     .done(function (coords) {
 
                         //console.log(coords);

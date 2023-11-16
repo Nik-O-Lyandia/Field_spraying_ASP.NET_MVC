@@ -31,12 +31,13 @@
                 <button class="nav-link" id="nav-work-start-tab" data-bs-toggle="tab" data-bs-target="#nav-work-start" type="button" role="tab" aria-controls="nav-work-start" aria-selected="false">Work start</button>
             </div>
         </nav>
+
         <div class="tab-content" id="nav-tabContent">
+
             <div class="tab-pane fade show active" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
 
                 <button id="draw_polygon_button" type="button" class="btn btn-primary">Draw area</button>
                 <button id="draw_point_button" type="button" class="btn btn-primary">Add loading point</button>
-                <button id="select_box_button" type="button" class="btn btn-primary">SELECT BOX</button>
                 <hr />
                 <button id="undo_button" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24"/>Undo last</button>
                 <hr />
@@ -49,11 +50,12 @@
                 <button id="set_loading_point_button" type="button" class="btn btn-primary">Set loading point</button>
 
             </div>
+
             <div class="tab-pane fade" id="nav-management" role="tabpanel" aria-labelledby="nav-management-tab">
 
                 <button id="import_button" type="button" class="btn btn-primary">Import area</button>
                 <hr />
-                <button id="export_select_button" type="button" class="btn btn-primary">Select area</button>
+                <button id="management_select_button" type="button" class="btn btn-primary">Select area</button>
                 <hr />
                 <form id="export_form" action="/Map/Export" method="post" style="display: none">
 
@@ -67,10 +69,13 @@
                         <input type="text" class="form-control" id="point_name" name="point_name" placeholder="point_1" />
                     </div>
 
-                    <button type="submit" id="export_button" class="btn btn-success">Export area</button>
+                    <button type="submit" id="export_button" class="btn btn-success">Export</button>
                 </form>
+                <hr />
+                <button id="delete_feature_button" type="button" class="btn btn-primary" style="display: none">Delete feature</button>
 
             </div>
+
             <div class="tab-pane fade" id="nav-work-start" role="tabpanel" aria-labelledby="nav-work-start-tab">
 
                 <button id="select_area_button" type="button" class="btn btn-primary">Select area</button>
@@ -78,6 +83,7 @@
                 <button id="build_trajectory_button" type="button" class="btn btn-primary">Build trajectory</button>
 
             </div>
+
         </div>
 
 

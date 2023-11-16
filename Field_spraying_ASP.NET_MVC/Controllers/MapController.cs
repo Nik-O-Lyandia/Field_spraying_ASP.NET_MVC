@@ -5,10 +5,11 @@ using System.Text.Json;
 using Field_spraying_ASP.NET_MVC.Models;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
 
 namespace Field_spraying_ASP.NET_MVC.Controllers
 {
-    [Route("/Map")]
+    [Route("/map")]
     [ApiController]
     public class MapController : Controller
     {
@@ -36,8 +37,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             return Ok(area);
         }
 
-        [Route("Export")]
-        [HttpPost]      // POST /map/import
+        [Route("export")]
+        [HttpPost]      // POST /map/export
         public async Task<IActionResult> Export([FromBody] JsonElement formData)
         {
             Area area = null;
@@ -104,7 +105,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             return Ok(result);
         }
 
-        [Route("Import")]
+        [Route("import")]
         [HttpGet]   // GET /map/import
         public async Task<IActionResult> Import()
         {
@@ -124,7 +125,62 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             });
         }
 
-        [Route("Build_trajectory")]
+        [Route("delete-feature")]
+        [HttpPost]      // POST /map/import
+        public async Task<IActionResult> DeleteFeature([FromBody] JsonElement data)
+        {
+            Area deletedArea = null;
+            Point deletedPoint = null;
+            string result = "";
+
+            var featureName = data.GetProperty("name").GetString();
+            var featureType = data.GetProperty("objType").GetString();
+
+            if (featureName != "")
+            {
+                if (featureType == "polygon")
+                {
+                    await _dynamoDBContext.DeleteAsync<Area>(featureName);
+                    deletedArea = await _dynamoDBContext.LoadAsync<Area>(featureName);
+                    if (deletedArea == null)
+                    {
+                        result = "Feature is deleted";
+                        return Ok(result);
+                    }
+                    else
+                    {
+                        result = "Feature was not deleted";
+                        return BadRequest(result);
+                    }
+                }
+                else if (featureType == "point")
+                {
+                    await _dynamoDBContext.DeleteAsync<Point>(featureName);
+                    deletedPoint = await _dynamoDBContext.LoadAsync<Point>(featureName);
+                    if (deletedArea == null)
+                    {
+                        result = "Feature is deleted";
+                        return Ok(result);
+                    }
+                    else
+                    {
+                        result = "Feature was not deleted";
+                        return BadRequest(result);
+                    }
+                }
+                else
+                {
+                    return BadRequest("Wrong feature type");
+                }
+            }
+            else
+            {
+                return BadRequest("There is no such feature in DB");
+            }
+
+        }
+
+        [Route("build-trajectory")]
         [HttpGet]   // GET /map/build_trajectory
         public IActionResult Build_trajectory(string area_name, string spraying_radius)
         {
