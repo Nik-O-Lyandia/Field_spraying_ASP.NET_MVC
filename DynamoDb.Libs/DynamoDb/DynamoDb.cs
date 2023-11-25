@@ -2,6 +2,7 @@
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -35,12 +36,15 @@ namespace DynamoDb.Libs.DynamoDb
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                // LOG HERE
                 throw;
             }
         }
 
-        public async Task<List<T>?> GetAllObjects<T>()
+        /// <summary>
+        /// Retrieves all object of specific class <typeparamref name="T"/>.
+        /// </summary>
+        public async Task<List<T>?> GetAllObjects<T>() where T : class
         {
             var conditions = new List<ScanCondition>();
             try
@@ -49,12 +53,15 @@ namespace DynamoDb.Libs.DynamoDb
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                // LOG HERE
                 return null;
             }
         }
 
-        public async Task<T?> GetObject<T>(string elemName)
+        /// <summary>
+        /// Retrieves object specified by <paramref name="elemName"/> and class <typeparamref name="T"/>.
+        /// </summary>
+        public async Task<T?> GetObject<T>(string elemName) where T : class
         {
             try
             {
@@ -62,19 +69,21 @@ namespace DynamoDb.Libs.DynamoDb
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                // LOG HERE
                 return default(T);
             }
         }
 
+        /// <summary>
+        /// Puts new object <paramref name="obj"/> into DB.
+        /// </summary>
         public async Task<bool> PutObject<T>(T obj) where T : class
         {
-            Type t = obj.GetType();
-            PropertyInfo prop = t.GetProperty("Name");
-            object name = prop.GetValue(obj);
+            Type objType = obj.GetType();
+            PropertyInfo objNameProp = objType.GetProperty("Name");
+            object objName = objNameProp.GetValue(obj);
 
-            //var search = _dynamoDBContext.ScanAsync<T>(conditions);
-            var loadedObject = _dynamoDBContext.LoadAsync<T>((string)name);
+            var loadedObject = this.GetObject<T>((string)objName);
 
             if (loadedObject.Result == null)
             {
@@ -85,23 +94,25 @@ namespace DynamoDb.Libs.DynamoDb
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    // LOG HERE
                     return false;
                 }
             }
             else
             {
-                Console.WriteLine("Object already exists in DB");
                 return false;
             }
         }
 
-        public async Task<bool> DeleteObject<T>(string elemName)
+        /// <summary>
+        /// Deletes existing object specified by <paramref name="elemName"/> and class <typeparamref name="T"/>.
+        /// </summary>
+        public async Task<bool> DeleteObject<T>(string elemName) where T : class
         {
             try
             {
                 await _dynamoDBContext.DeleteAsync<T>(elemName);
-                var resultObj = await _dynamoDBContext.LoadAsync<T>(elemName);
+                var resultObj = await this.GetObject<T>(elemName);
 
                 if (resultObj == null)
                 {
@@ -114,7 +125,47 @@ namespace DynamoDb.Libs.DynamoDb
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                // LOG HERE
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Updates existing object specified by <paramref name="elemName"/> with parameters from new <paramref name="updatedObj"/>.
+        /// </summary>
+        public async Task<bool> UpdateObject<T>(string elemName, T updatedObj) where T : class
+        {
+            var retrievedObj = await this.GetObject<T>(elemName);
+
+            Type retrievedObjType = retrievedObj.GetType();
+            PropertyInfo[] retrievedObjProps = retrievedObjType.GetProperties();
+
+            Type updatedObjType = updatedObj.GetType();
+            PropertyInfo[] updatedObjProps = updatedObjType.GetProperties();
+
+            for (int i = 0; i < updatedObjProps.Length; i++)
+            {
+                if (updatedObjProps[i].GetValue(updatedObj) == null)
+                {
+                    updatedObjProps[i].SetValue(updatedObj, retrievedObjProps[i].GetValue(retrievedObj));
+                }
+            }
+
+            if (retrievedObj != null)
+            {
+                try
+                {
+                    await _dynamoDBContext.SaveAsync(updatedObj);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    // LOG HERE
+                    return false;
+                }
+            }
+            else
+            {
                 return false;
             }
         }

@@ -6,11 +6,17 @@ namespace Field_spraying_ASP.NET_MVC.Models
     public class Drone
     {
         [DynamoDBHashKey]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DynamoDBRangeKey]
-        string TypeName { get; set; }
+        private string? TypeName { get; set; }
 
         public Drone() { }
+
+        public Drone(string? name, string? typeName)
+        {
+            Name = name;
+            TypeName = typeName;
+        }
     }
 }

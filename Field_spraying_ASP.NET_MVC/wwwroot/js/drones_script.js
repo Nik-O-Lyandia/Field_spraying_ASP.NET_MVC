@@ -18,7 +18,7 @@ $(document).ready(function () {
 
     $("#nav-add-drone-tab").on('showed.bs.tab', function (event) {
         $.get({
-            url: "/drones/get-drone-types",
+            url: "/drones/get-all-drone-types",
             success: function (data) {
                 const selectDroneTypeElement = document.getElementById("drone-type");
                 $.each(data, function (i, elem) {
