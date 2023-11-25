@@ -10,5 +10,7 @@ namespace Field_spraying_ASP.NET_MVC.Models
 
         [DynamoDBProperty]
         public double[] Coords { get; set; }
+
+        public Point() { }
     }
 }

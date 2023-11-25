@@ -11,7 +11,7 @@ namespace DynamoDb.Libs.DynamoDb
         public void CreateTables();
         public Task<List<T>?> GetAllObjects<T>();
         public Task<T?> GetObject<T>(string elemName);
-        public Task<bool> PutObject<T>(T obj);
+        public Task<bool> PutObject<T>(T obj) where T : class;
         public Task<bool> DeleteObject<T>(string elemName);
     }
 }

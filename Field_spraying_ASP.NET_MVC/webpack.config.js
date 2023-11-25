@@ -5,9 +5,9 @@ module.exports = {
     optimization: {
         minimize: false,
     },
-    entry: './wwwroot/js/site.js',
+    entry: './wwwroot/js/map_script.js',
     output: {
         path: __dirname,
-        filename: './wwwroot/js/bundle.js'
+        filename: './wwwroot/js/map_script_bundle.js'
     },
 };
