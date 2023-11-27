@@ -81,14 +81,6 @@ function addDrawInteraction(drawType) {
     map.addInteraction(draw);
 }
 
-function turnOverlayOn() {
-    document.getElementById('waiting_overlay').style.display = 'flex';
-}
-
-function turnOverlayOff() {
-    document.getElementById('waiting_overlay').style.display = 'none';
-}
-
 function removeDrawInteractions() {
     map.removeInteraction(draw);
     map.removeInteraction(snap);
@@ -98,7 +90,9 @@ function removeDrawInteractions() {
 function removeSelectInteraction() {
     selectedFeatures = null;
     map.removeInteraction(management_select);
-    formElement.style.display = "none";
+    map.removeInteraction(work_select);
+    exportFormElement.style.display = "none";
+    workPlanFormElement.style.display = "none";
     deleteButton.style.display = "none";
 }
 
@@ -227,10 +221,9 @@ const selectPointerMove = new Select({
 let selectedFeatures = null;
 let featuresAddedThisSession = [];
 
-
-
-const formElement = document.getElementById("export_form");
-const deleteButton = document.getElementById("delete_feature_button");
+const exportFormElement = document.getElementById("export-form");
+const workPlanFormElement = document.getElementById("work-plan-form");
+const deleteButton = document.getElementById("delete-feature-button");
 
 
 //********************************************
@@ -250,17 +243,17 @@ management_select.on("select", function (e) {
     }
 
     if (selectedFeatures.getLength() <= 2) {
-        formElement.style.display = "block";
-        var formInnerElements = formElement.getElementsByClassName("form-group");
+        exportFormElement.style.display = "block";
+        var exportFormInnerElements = exportFormElement.getElementsByClassName("form-group");
 
-        for (let i = 0; i < formInnerElements.length; i++) {
+        for (let i = 0; i < exportFormInnerElements.length; i++) {
             if (selectedFeatures.getLength() == 1) {
-                if ((formInnerElements[i].id == "area_name-group" && geoms[0] instanceof Polygon) ||
-                    (formInnerElements[i].id == "point_name-group" && geoms[0] instanceof Point)) {
-                    formInnerElements[i].style.display = "block";
+                if ((exportFormInnerElements[i].id == "area-name-group" && geoms[0] instanceof Polygon) ||
+                    (exportFormInnerElements[i].id == "point-name-group" && geoms[0] instanceof Point)) {
+                    exportFormInnerElements[i].style.display = "block";
                     deleteButton.style.display = "block";
                 } else {
-                    formInnerElements[i].style.display = "none";
+                    exportFormInnerElements[i].style.display = "none";
                 }
             } else {
                 deleteButton.style.display = "none";
@@ -268,11 +261,11 @@ management_select.on("select", function (e) {
 
             if (selectedFeatures.getLength() == 2) {
                 if ((geoms[0] instanceof Polygon || geoms[1] instanceof Polygon) && (geoms[0] instanceof Point || geoms[1] instanceof Point)) {
-                    if ((formInnerElements[i].id == "area_name-group" && (geoms[0] instanceof Polygon || geoms[1] instanceof Polygon)) ||
-                        (formInnerElements[i].id == "point_name-group" && (geoms[0] instanceof Point || geoms[1] instanceof Point))) {
-                        formInnerElements[i].style.display = "block";
+                    if ((exportFormInnerElements[i].id == "area-name-group" && (geoms[0] instanceof Polygon || geoms[1] instanceof Polygon)) ||
+                        (exportFormInnerElements[i].id == "point-name-group" && (geoms[0] instanceof Point || geoms[1] instanceof Point))) {
+                        exportFormInnerElements[i].style.display = "block";
                     } else {
-                        formInnerElements[i].style.display = "none";
+                        exportFormInnerElements[i].style.display = "none";
                     }
                 } else {
                     alert("Selected features must not be the same type.");
@@ -282,7 +275,7 @@ management_select.on("select", function (e) {
             }
         }
     } else {
-        formElement.style.display = "none";
+        exportFormElement.style.display = "none";
         deleteButton.style.display = "none";
         let featuresNum = exportSelectActivated ? "1" : "2";
         alert("Select no more than " + featuresNum + " features.");
@@ -295,60 +288,70 @@ management_select.on("select", function (e) {
 
 });
 
-//work_select.on("select", function (e) {
-//    map.removeInteraction(selectPointerMove);
-//    selectedFeatures = e.target.getFeatures();
+work_select.on("select", function (e) {
+    map.removeInteraction(selectPointerMove);
+    selectedFeatures = e.target.getFeatures();
 
-//    //console.log(e.selected);
-//    //console.log(e);
+    //console.log(e.selected);
+    //console.log(e);
 
-//    let geoms = [];
-//    for (let i = 0; i < selectedFeatures.getLength(); i++) {
-//        geoms.push(selectedFeatures.item(i).getGeometry());
-//    }
+    let geoms = [];
+    for (let i = 0; i < selectedFeatures.getLength(); i++) {
+        geoms.push(selectedFeatures.item(i).getGeometry());
+    }
 
-//    if ((selectedFeatures.getLength() <= 2 && !exportSelectActivated) ||
-//        (selectedFeatures.getLength() <= 1 && exportSelectActivated)) {
+    if (selectedFeatures.getLength() <= 2) {
 
-//        formElement.style.display = "block";
-//        var formInnerElements = formElement.getElementsByClassName("form-group");
+        if (selectedFeatures.getLength() == 2) {
+            if ((geoms[0] instanceof Polygon && geoms[1] instanceof Point) ||
+                (geoms[1] instanceof Polygon && geoms[0] instanceof Point)) {
 
-//        for (let i = 0; i < formInnerElements.length; i++) {
-//            if (selectedFeatures.getLength() == 1) {
-//                if ((formInnerElements[i].id == "area_name-group" && geoms[0] instanceof Polygon) ||
-//                    (formInnerElements[i].id == "point_name-group" && geoms[0] instanceof Point)) {
-//                    formInnerElements[i].style.display = "block";
-//                } else {
-//                    formInnerElements[i].style.display = "none";
-//                }
-//            }
+                workPlanFormElement.style.display = "block";
+                var workPlanFormInnerElements = workPlanFormElement.getElementsByClassName("form-group");
 
-//            if (selectedFeatures.getLength() == 2) {
-//                if ((geoms[0] instanceof Polygon || geoms[1] instanceof Polygon) && (geoms[0] instanceof Point || geoms[1] instanceof Point)) {
-//                    if ((formInnerElements[i].id == "area_name-group" && (geoms[0] instanceof Polygon || geoms[1] instanceof Polygon)) ||
-//                        (formInnerElements[i].id == "point_name-group" && (geoms[0] instanceof Point || geoms[1] instanceof Point))) {
-//                        formInnerElements[i].style.display = "block";
-//                    } else {
-//                        formInnerElements[i].style.display = "none";
-//                    }
-//                } else {
-//                    alert("Selected features must not be the same type.");
-//                    removeSelectInteraction();
-//                    break;
-//                }
-//            }
-//        }
-//    } else {
-//        let featuresNum = exportSelectActivated ? "1" : "2";
-//        alert("Select no more than " + featuresNum + " features.");
-//        removeSelectInteraction();
-//    }
+                for (let i = 0; i < workPlanFormInnerElements.length; i++) {
+                    if (workPlanFormInnerElements[i].id == "area-name-work-plan-group") {
+                        for (let j = 0; j < geoms.length; j++) {
+                            if (geoms[j] instanceof Polygon) {
+                                for (const child of workPlanFormInnerElements[i].children) {
+                                    if (child.id == "area-name-work-plan") {
+                                        child.value = selectedFeatures.item(j).get("name");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (workPlanFormInnerElements[i].id == "point-name-work-plan-group") {
+                        for (let j = 0; j < geoms.length; j++) {
+                            if (geoms[j] instanceof Point) {
+                                for (const child of workPlanFormInnerElements[i].children) {
+                                    if (child.id == "point-name-work-plan") {
+                                        child.value = selectedFeatures.item(j).get("name");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                alert("Selected features must be: area and point.");
+                removeSelectInteraction();
+            }
+        }
+    } else {
+        alert("Please, select no more then 2 features: area and loading point.");
+        removeSelectInteraction();
+    }
 
-//    if (e.deselected.length > 0 && e.selected.length == 0 && selectedFeatures.getLength() == 0) {
-//        removeSelectInteraction();
-//    }
+    if (e.deselected.length > 0 && e.selected.length == 0 && selectedFeatures.getLength() == 0) {
+        removeSelectInteraction();
+    }
 
-//});
+});
+
+$("#spraying-swath-width-work-plan").on("input", function (slideEvt) {
+    $("#spraying-swath-width-work-plan-value-span").text(slideEvt.target.value);
+});
 
 // ----- MAP AUTOUPDATE -----
 $.get("/Map/Import")
@@ -357,10 +360,10 @@ $.get("/Map/Import")
     });
 
 const importInterval = setInterval(function () {
-$.get("/Map/Import")
-    .done(function (data) {
-        importMap(data)
-    });
+    $.get("/Map/Import")
+        .done(function (data) {
+            importMap(data)
+        });
 }, 5000);
 
 //********************************************
@@ -387,7 +390,7 @@ $(document).ready(function () {
     //********************************************
 
     // ----- DRAW POLYGON -----
-    $("#draw_polygon_button").click(function () {
+    $("#draw-polygon-button").click(function () {
         removeDrawInteractions();
         addDrawInteraction('Polygon');
         map.addInteraction(snap);
@@ -395,30 +398,30 @@ $(document).ready(function () {
     });
 
     // ----- DRAW LOADING POINT -----
-    $("#draw_point_button").click(function () {
+    $("#draw-point-button").click(function () {
         removeDrawInteractions();
         addDrawInteraction('Point');
         map.addInteraction(modify);
     });
 
     // ----- UNDO LAST ACTION -----
-    $("#undo_button").click(function () {
+    $("#undo-button").click(function () {
         draw.removeLastPoint();
     });
 
     // ----- CANCEL DRAW -----
-    $("#cancel_draw_button").click(function () {
+    $("#cancel-draw-button").click(function () {
         removeDrawInteractions();
     });
 
 
     // ----- CLEAR LAST ADDED FEATURE -----
-    $("#clear_last_feature_button").click(function () {
+    $("#clear-last-feature-button").click(function () {
         source.removeFeature(featuresAddedThisSession.pop());
     });
 
     // ----- CLEAR ALL NEW FEATURES -----
-    $("#clear_all_new_button").click(function () {
+    $("#clear-all-new-button").click(function () {
         for (let i = 0; i < featuresAddedThisSession.length; i++) {
             source.removeFeature(featuresAddedThisSession[i]);
         }
@@ -430,7 +433,7 @@ $(document).ready(function () {
     //********************************************
 
     // ----- IMPORT AREA ACTION -----
-    $("#import_button").click(function () {
+    $("#import-button").click(function () {
 
         $.get("/Map/Import")
             .done(function (data) {
@@ -439,7 +442,7 @@ $(document).ready(function () {
     });
 
     // ----- AREA SELECTION -----
-    $("#management_select_button").click(function () {
+    $("#management-select-button").click(function () {
         exportSelectActivated = true;
         map.addInteraction(selectPointerMove);
         map.addInteraction(management_select);
@@ -447,7 +450,7 @@ $(document).ready(function () {
     });
 
     // ----- EXPORT AREA ACTION -----
-    $("form").submit(function (event) {
+    $("#export-form").submit(function (event) {
 
         var formDataObject = {};
 
@@ -468,14 +471,14 @@ $(document).ready(function () {
                 for (let i = 0; i < geoms.length; i++) {
                     if (geoms[i] instanceof Polygon) {
                         let areaObj = {};
-                        areaName = $("#area_name").val() != null ? $("#area_name").val() : null;
+                        areaName = $("#area-name").val() != null ? $("#area-name").val() : null;
                         areaObj.name = areaName;
                         areaObj.coords = geoms[i].getCoordinates()[0];
                         formDataObject.area = areaObj;
                     }
                     if (geoms[i] instanceof Point) {
                         let pointObj = {};
-                        pointName = $("#point_name").val() != null ? $("#point_name").val() : null
+                        pointName = $("#point-name").val() != null ? $("#point-name").val() : null
                         pointObj.name = pointName;
                         pointObj.coords = geoms[i].getCoordinates();
                         formDataObject.point = pointObj;
@@ -523,7 +526,7 @@ $(document).ready(function () {
     });
 
     // ----- DELETE FEATURE FROM DB -----
-    $("#delete_feature_button").click(function () {
+    $("#delete-feature-button").click(function () {
 
         if (selectedFeatures != null) {
 
@@ -575,43 +578,99 @@ $(document).ready(function () {
     //********************************************
 
     // ----- AREA SELECTION -----
-    $("#select_area_button").click(function () {
+    $("#select-area-work-plan-button").click(function () {
 
         map.addInteraction(selectPointerMove);
         map.addInteraction(work_select);
-
     });
 
     // ----- CALCULATE COVERAGE TRAJECTORY -----
-    $("#build_trajectory_button").click(function () {
+    $("#build-trajectory-button").click(function () {
 
-        if (selectedFeature != null) {
-            let selectedFeatureName = selectedFeature.get("name");
+        var formDataObject = {};
 
-            //console.log(selectedFeature);
-
-            turnOverlayOn();
-            if (selectedFeatureName != none) {
-                $.get("/Map/build-trajectory", { area_name: selectedFeatureName, spraying_radius: 15 })
-                    .done(function (coords) {
-
-                        //console.log(coords);
-                        const feature = new Feature({
-                            geometry: new LineString(coords),
-                        });
-
-                        source.addFeature(feature);
-                        featuresAddedThisSession.push(feature);
-
-                        turnOverlayOff();
-
-                    });
-            } else {
-                alert("Feature has no name. Please export new added features first.");
+        if (selectedFeatures != null) {
+            let geoms = [];
+            for (let i = 0; i < selectedFeatures.getLength(); i++) {
+                geoms.push(selectedFeatures.item(i).getGeometry());
             }
 
-        } else {
-            alert("Please, select area first.")
+            if (selectedFeatures.getLength() == 2) {
+                if ((geoms[0] instanceof Polygon && geoms[1] instanceof Point) ||
+                    (geoms[1] instanceof Polygon && geoms[0] instanceof Point)) {
+
+                    for (let i = 0; i < geoms.length; i++) {
+                        if (geoms[i] instanceof Polygon) {
+                            if ($("#area-name-work-plan").val() != null) {
+                                formDataObject.area_name = $("#area-name-work-plan").val();
+                            } else {
+                                alert("Feature has no name. Please export new added features first.");
+                                return;
+                            }
+                        }
+                        if (geoms[i] instanceof Point) {
+                            if ($("#point-name-work-plan").val() != null) {
+                                formDataObject.point_name = $("#point-name-work-plan").val();
+                            } else {
+                                alert("Feature has no name. Please export new added features first.");
+                                return;
+                            }
+                        }
+                    }
+                    formDataObject.spraying_diameter = $("#spraying-swath-width-work-plan").val();
+                    //formDataObject.spraying_diameter = 20;
+
+
+                    const features = source.getFeatures();
+
+                    let addFeaturePermission = true;
+                    for (let j = 0; j < features.length; j++) {
+                        if (formDataObject.area_name == features[j].get('trajectory_area_name') &&
+                            formDataObject.point_name == features[j].get('trajectory_point_name')) {
+                            addFeaturePermission = false
+                        }
+                    }
+
+                    if (addFeaturePermission) {
+                        turnOverlayOn();
+
+                        $.ajax({
+                            type: "GET",
+                            url: "/Map/build-trajectory",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            data: formDataObject,
+                            dataType: "json",
+                            success: function (coords) {
+                                //console.log(coords);
+
+                                const feature = new Feature({
+                                    geometry: new LineString(coords),
+                                    trajectory_area_name: formDataObject.area_name,
+                                    trajectory_point_name: formDataObject.point_name,
+                                });
+                                source.addFeature(feature);
+                                featuresAddedThisSession.push(feature);
+
+                                removeSelectInteraction();
+                            },
+                            error: function (response) {
+                                console.log(response);
+                                alert("Export failed");
+                            }
+                        })
+                            .done(function (data) {
+                                turnOverlayOff();
+                            });
+                    } else {
+                        alert("Such trajectory is already added");
+                    }
+                } else {
+                    alert("Select only 1 polygon or 1 loading point or both of them at the same time.");
+                }
+            }
         }
     });
 });

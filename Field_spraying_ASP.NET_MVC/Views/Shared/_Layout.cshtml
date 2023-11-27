@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Field_spraying_ASP.NET_MVC.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/spinner.css" type="text/css" />
+    <link rel="stylesheet" href="~/css/overlay.css" type="text/css" />
 </head>
 <body>
     <header>
@@ -31,6 +33,20 @@
         </nav>
     </header>
     <div class="container-fluid main">
+
+        <div id="waiting_overlay" class="waiting-overlay">
+            <div id="floatingBarsG">
+                <div class="blockG" id="rotateG_01"></div>
+                <div class="blockG" id="rotateG_02"></div>
+                <div class="blockG" id="rotateG_03"></div>
+                <div class="blockG" id="rotateG_04"></div>
+                <div class="blockG" id="rotateG_05"></div>
+                <div class="blockG" id="rotateG_06"></div>
+                <div class="blockG" id="rotateG_07"></div>
+                <div class="blockG" id="rotateG_08"></div>
+            </div>
+        </div>
+
         <main role="main" class="pb-3 h-100">
             @RenderBody()
         </main>
@@ -43,7 +59,7 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @*<script src="~/js/site.js" asp-append-version="true"></script>*@
+    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

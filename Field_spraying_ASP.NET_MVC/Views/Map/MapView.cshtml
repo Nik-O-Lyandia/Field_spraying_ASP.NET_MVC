@@ -2,22 +2,7 @@
     ViewData["Title"] = "MapView";
 }
 <link rel="stylesheet" href="~/css/site.css" type="text/css" />
-<link rel="stylesheet" href="~/css/spinner.css" type="text/css" />
-<link rel="stylesheet" href="~/css/overlay.css" type="text/css" />
-<script type="module" src="~/js/bundle.js"></script>
-
-<div id="waiting_overlay" class="waiting-overlay">
-    <div id="floatingBarsG">
-        <div class="blockG" id="rotateG_01"></div>
-        <div class="blockG" id="rotateG_02"></div>
-        <div class="blockG" id="rotateG_03"></div>
-        <div class="blockG" id="rotateG_04"></div>
-        <div class="blockG" id="rotateG_05"></div>
-        <div class="blockG" id="rotateG_06"></div>
-        <div class="blockG" id="rotateG_07"></div>
-        <div class="blockG" id="rotateG_08"></div>
-    </div>
-</div>
+<script type="module" src="~/js/map_script_bundle.js"></script>
 
 <div class="row h-100">
 
@@ -38,51 +23,79 @@
 
             <div class="tab-pane fade show active" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
 
-                <button id="draw_polygon_button" type="button" class="btn btn-primary">Draw area</button>
-                <button id="draw_point_button" type="button" class="btn btn-primary">Add loading point</button>
+                <button id="draw-polygon-button" type="button" class="btn btn-primary">Draw area</button>
+                <button id="draw-point-button" type="button" class="btn btn-primary">Add loading point</button>
                 <hr />
-                <button id="undo_button" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24"/>Undo last</button>
+                <button id="undo-button" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24"/>Undo last</button>
                 <hr />
-                <button id="cancel_draw_button" type="button" class="btn btn-primary">Cancel drawing</button>
+                <button id="cancel-draw-button" type="button" class="btn btn-primary">Cancel drawing</button>
                 <hr />
-                <button id="clear_all_new_button" type="button" class="btn btn-primary">Clear all new</button>
+                <button id="clear-all-new-button" type="button" class="btn btn-primary">Clear all new</button>
                 <hr />
-                <button id="clear_last_feature_button" type="button" class="btn btn-primary">Clear last added</button>
+                <button id="clear-last-feature-button" type="button" class="btn btn-primary">Clear last added</button>
                 <hr />
-                <button id="set_loading_point_button" type="button" class="btn btn-primary">Set loading point</button>
+                <button id="set-loading-point-button" type="button" class="btn btn-primary">Set loading point</button>
 
             </div>
 
             <div class="tab-pane fade" id="nav-management" role="tabpanel" aria-labelledby="nav-management-tab">
 
-                <button id="import_button" type="button" class="btn btn-primary">Import area</button>
+                <button id="import-button" type="button" class="btn btn-primary">Import area</button>
                 <hr />
-                <button id="management_select_button" type="button" class="btn btn-primary">Select area</button>
+                <button id="management-select-button" type="button" class="btn btn-primary">Select area</button>
                 <hr />
-                <form id="export_form" action="/Map/Export" method="post" style="display: none">
+                <form id="export-form" action="/Map/Export" method="post" style="display: none">
 
-                    <div id="area_name-group" class="form-group" style="display: none">
-                        <label for="area_name">Area name:</label>
-                        <input type="text" class="form-control" id="area_name" name="area_name" placeholder="area_1" />
+                    <div id="area-name-group" class="form-group" style="display: none">
+                        <label for="area-name" class="form-label">Area name:</label>
+                        <input type="text" class="form-control" id="area-name" name="area-name" placeholder="area_1" />
                     </div>
                     
-                    <div id="point_name-group" class="form-group" style="display: none">
-                        <label for="point_name">Loading point name:</label>
-                        <input type="text" class="form-control" id="point_name" name="point_name" placeholder="point_1" />
+                    <div id="point-name-group" class="form-group" style="display: none">
+                        <label for="point-name" class="form-label">Loading point name:</label>
+                        <input type="text" class="form-control" id="point-name" name="point-name" placeholder="point_1" />
                     </div>
 
-                    <button type="submit" id="export_button" class="btn btn-success">Export</button>
+                    <button type="submit" id="export-button" class="btn btn-success">Export</button>
                 </form>
                 <hr />
-                <button id="delete_feature_button" type="button" class="btn btn-primary" style="display: none">Delete feature</button>
+                <button id="delete-feature-button" type="button" class="btn btn-primary" style="display: none">Delete feature</button>
 
             </div>
 
             <div class="tab-pane fade" id="nav-work-start" role="tabpanel" aria-labelledby="nav-work-start-tab">
 
-                <button id="select_area_button" type="button" class="btn btn-primary">Select area</button>
+                <button id="select-area-work-plan-button" type="button" class="btn btn-primary">Select area</button>
                 <hr />
-                <button id="build_trajectory_button" type="button" class="btn btn-primary">Build trajectory</button>
+                <form id="work-plan-form" method="get" style="display: none">
+
+                    <div id="area-name-work-plan-group" class="form-group">
+                        <label for="area-name-work-plan" class="form-label">Area name:</label>
+                        <input type="text" class="form-control" id="area-name-work-plan" name="area-name-work-plan" disabled />
+                    </div>
+                    
+                    <div id="point-name-work-plan-group" class="form-group">
+                        <label for="point-name-work-plan" class="form-label">Loading point name:</label>
+                        <input type="text" class="form-control" id="point-name-work-plan" name="point-name-work-plan" disabled />
+                    </div>
+
+                    <div id="spraying-swath-width-work-plan-group" class="form-group">
+                        <label for="spraying-swath-width-work-plan" class="form-label">Spraying swath width [m]:</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="range" class="form-range" min="4" max="8" step="0.5" value="4" id="spraying-swath-width-work-plan" name="spraying-swath-width-work-plan">
+                            </div>
+                            <div class="col-6">
+                                <span id="spraying-swath-width-work-plan-value-span">4</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="build-trajectory-button" type="button" class="btn btn-primary">Build trajectory</button>
+                    <hr />
+
+                    <button type="submit" id="submit-button-work-plan" class="btn btn-success">Export work plan</button>
+                </form>
 
             </div>
 

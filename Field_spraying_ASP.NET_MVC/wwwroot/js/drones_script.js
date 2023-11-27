@@ -7,6 +7,126 @@ function loadDroneTypes() {
 
 }
 
+function addObj(objName) {
+    var formData = $("#add-" + objName + "-form").serializeArray();
+
+    let dataObject = {};
+
+    let postAllowed = true;
+
+    $.each(formData, function (i, field) {
+        if (field.value == "" || field.value == null) {
+            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            postAllowed = false;
+            return false;
+        }
+        dataObject[field.name] = field.value;
+    });
+
+    let data = JSON.stringify(dataObject);
+
+    if (postAllowed) {
+        $.ajax({
+            type: "POST",
+            url: "/drones/add-" + objName,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: data,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                alert(response);
+            },
+            error: function (response) {
+                console.log(response);
+                alert("Add failed with response: " + response);
+            }
+        });
+    }
+}
+
+function deleteObj(objName) {
+    var formData = $("#delete-" + objName + "-form").serializeArray();
+
+    let dataObject = {};
+
+    let postAllowed = true;
+
+    $.each(formData, function (i, field) {
+        if (field.value == "" || field.value == null) {
+            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            postAllowed = false;
+            return false;
+        }
+        dataObject[field.name] = field.value;
+    });
+
+    let data = JSON.stringify(dataObject);
+
+    if (postAllowed) {
+        $.ajax({
+            type: "DELETE",
+            url: "/drones/delete-" + objName,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: data,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                alert(response);
+            },
+            error: function (response) {
+                console.log(response);
+                alert("Delete failed with response: " + response);
+            }
+        });
+    }
+}
+
+function updateObj(objName) {
+    var formData = $("#update-" + objName + "-form").serializeArray();
+
+    let dataObject = {};
+
+    let postAllowed = true;
+
+    $.each(formData, function (i, field) {
+        if (field.value == "" || field.value == null) {
+            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            postAllowed = false;
+            return false;
+        }
+        dataObject[field.name] = field.value;
+    });
+
+    let data = JSON.stringify(dataObject);
+
+    if (postAllowed) {
+        $.ajax({
+            type: "PUT",
+            url: "/drones/update-" + objName,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: data,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                alert(response);
+            },
+            error: function (response) {
+                console.log(response);
+                alert("Update failed with response: " + response);
+            }
+        });
+    }
+}
+
 //********************************************
 //          HANDLE CHANGE EVENTS
 //********************************************
@@ -31,46 +151,19 @@ $(document).ready(function () {
 
     // ----- ADD DRONE TYPE -----
     $("#add-drone-type-form").submit(function (event) {
+        addObj("drone-type");
+        event.preventDefault();
+    });
 
-        var formData = $("#add-drone-type-form").serializeArray();
+    // ----- DELETE DRONE TYPE -----
+    $("#delete-drone-type-form").submit(function (event) {
+        deleteObj("drone-type");
+        event.preventDefault();
+    });
 
-        let dataObject = {};
-
-        let postAllowed = true;
-        //console.log(formData);
-        $.each(formData, function (i, field) {
-            if (field.value == "" || field.value == null) {
-                alert("Some fields aren't filled. Please, fill all the requsted fields.");
-                postAllowed = false;
-                return false;
-            }
-            dataObject[field.name] = field.value;
-        });
-
-        let data = JSON.stringify(dataObject);
-
-        console.log(data);
-
-        if (postAllowed) {
-            $.ajax({
-                type: "POST",
-                url: "/drones/add-drone-type",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: data,
-                dataType: "json",
-                success: function (response) {
-                    console.log(response);
-                },
-                error: function (response) {
-                    console.log(response);
-                    alert("Export failed");
-                }
-            });
-        }
-
+    // ----- UPDATE DRONE TYPE -----
+    $("#update-drone-type-form").submit(function (event) {
+        updateObj("drone-type");
         event.preventDefault();
     });
 
@@ -113,91 +206,17 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    
-    // ----- DELETE FEATURE FROM DB -----
-    $("#delete_feature_button").click(function () {
-
-        if (selectedFeatures != null) {
-
-            let dataObject = {};
-
-            let feature = selectedFeatures.item(0);
-            let featureGeom = feature.getGeometry();
-
-            dataObject.name = selectedFeatures.item(0).get("name");
-
-            if (featureGeom instanceof Polygon) {
-                dataObject.objType = "polygon";
-            }
-
-            if (featureGeom instanceof Point) {
-                dataObject.objType = "point";
-            }
-
-            let data = JSON.stringify(dataObject);
-
-            $.ajax({
-                type: "POST",
-                url: "/Map/delete-feature",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: data,
-                dataType: "json",
-                success: function (response) {
-                    console.log(response);
-                    source.removeFeature(feature);
-                    removeSelectInteraction();
-                },
-                error: function (response) {
-                    console.log(response);
-                    alert("Feature is not in DB");
-                },
-            });
-
-        } else {
-            alert("Please select features to export.");
-        }
-
+    // ----- DELETE DRONE -----
+    $("#delete-drone-form").submit(function (event) {
+        deleteObj("drone");
+        event.preventDefault();
     });
 
-    //********************************************
-    //           WORK START SECTION
-    //********************************************
-
-
-    // ----- CALCULATE COVERAGE TRAJECTORY -----
-    $("#build_trajectory_button").click(function () {
-
-        if (selectedFeature != null) {
-            let selectedFeatureName = selectedFeature.get("name");
-
-            //console.log(selectedFeature);
-
-            turnOverlayOn();
-            if (selectedFeatureName != none) {
-                $.get("/Map/build-trajectory", { area_name: selectedFeatureName, spraying_radius: 15 })
-                    .done(function (coords) {
-
-                        //console.log(coords);
-                        const feature = new Feature({
-                            geometry: new LineString(coords),
-                        });
-
-                        source.addFeature(feature);
-                        featuresAddedThisSession.push(feature);
-
-                        turnOverlayOff();
-
-                    });
-            } else {
-                alert("Feature has no name. Please export new added features first.");
-            }
-
-        } else {
-            alert("Please, select area first.")
-        }
+    // ----- UPDATE DRONE -----
+    $("#update-drone-form").submit(function (event) {
+        updateObj("drone");
+        event.preventDefault();
     });
+
 });
 

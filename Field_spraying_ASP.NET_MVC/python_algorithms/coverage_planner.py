@@ -317,7 +317,8 @@ class CoveragePlanner():
                         # Check if it is out of the map boundaries
                         if x_next >= 0 and x_next < len(self.map_grid) and y_next >= 0 and y_next < len(self.map_grid[0]):
                             # Check if this position was already visited or if it is a visitable position on the map
-                            if closed[x_next][y_next] == 0 and self.map_grid[x_next][y_next] == 0:
+# ------------------------- if closed[x_next][y_next] == 0 and self.map_grid[x_next][y_next] == 0:
+                            if closed[x_next][y_next] == 0:
                                 g2 = g + self.a_star_movement_cost[i]
                                 f = g2 + heuristic[x_next][y_next]
                                 open.append([f, g2, x_next, y_next])

@@ -165,19 +165,19 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
         [Route("build-trajectory")]
         [HttpGet]   // GET /map/build_trajectory
-        public IActionResult Build_trajectory(string area_name, string spraying_radius)
+        public IActionResult Build_trajectory(string area_name, string point_name, string spraying_diameter)
         {
             string contentRootPath = _env.ContentRootPath;
             string cppFilePath = contentRootPath + @"\python_algorithms\main.py";
-            float r;
+            float d;
 
-            if (float.TryParse(spraying_radius, out r))
+            if (float.TryParse(spraying_diameter, out d))
             {
                 CmdRun cmdRun = new CmdRun();
-                var route = cmdRun.Run(cppFilePath, "-a " + area_name + " -r " + spraying_radius.ToString());
+                var route = cmdRun.Run(cppFilePath, "-a " + area_name + " -r " + (d / 2.0).ToString());
 
-                Debug.WriteLine(route);
-
+                //Debug.WriteLine(route);
+                Debug.WriteLine((d / 2.0).ToString());
                 var routeCoords = route.Split(",");
                 double[][] routeArray = new double[routeCoords.Length / 2][];
 

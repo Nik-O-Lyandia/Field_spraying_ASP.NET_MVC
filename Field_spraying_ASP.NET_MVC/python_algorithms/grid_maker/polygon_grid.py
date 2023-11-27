@@ -120,10 +120,10 @@ def create_grid(polygon, distance):
             c_x = x_cur + distance / 2
             c_y = y_cur + distance / 2
             if point_inside_polygon.checkInside(polygon=polygon, p=(c_x,c_y)):
-                grid_row.append((c_x,c_y))
+                grid_row.append((c_x,c_y,0))
                 map_row.append(0)
             else:
-                grid_row.append(-1)
+                grid_row.append((c_x,c_y,1))
                 map_row.append(1)
             x_cur = x_cur + 2*distance
             i = i + 1
@@ -156,8 +156,9 @@ def create_grid(polygon, distance):
     # Getting key points on perimeter trajectory vertices
     grid_row = []
     for i in range(len(polygon)):
-        grid_row.append(polygon[i])
+        grid_row.append((polygon[i][0], polygon[i][1], 0))
     if not grid_row == []:
+        grid_row.append((polygon[0][0], polygon[0][1], 0))
         grid.append(grid_row)
 
     return grid, bbox, map_np
@@ -187,7 +188,7 @@ def plot_result(features, grid_points_list, distance, bbox):
             # for hex_center in hex_centers:
             #     hex_grid.append(create_hexagon(edge,hex_center[0],hex_center[1]))
             for center in grid_row:
-                if not center == -1:
+                if not center[2] == 1:
                     grid.append(create_square(distance,center[0],center[1]))
                     res_squares[0].append(center[0])
                     res_squares[1].append(center[1])

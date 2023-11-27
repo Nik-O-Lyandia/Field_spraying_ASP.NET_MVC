@@ -12,6 +12,8 @@ if __name__ == "__main__":
         coverage_radius_index = args.index('-r') + 1
     
         result = get_coverage_trajectory( args[area_name_index], int( args[coverage_radius_index] ) )
+
+        # result = get_coverage_trajectory( 'area_3', 2 )
         
         # count = 0
         # total_len = 0
