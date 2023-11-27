@@ -1,5 +1,10 @@
 ﻿
 //********************************************
+//        STATIC VARIABLES SECTION
+//********************************************
+let droneTypes = []
+
+//********************************************
 //        STATIC FUNCTIONS SECTION
 //********************************************
 
@@ -132,11 +137,77 @@ function updateObj(objName) {
 //********************************************
 $(document).ready(function () {
 
-    $("#nav-add-drone-type-tab").on('showed.bs.tab', function (event) {
+    $("#nav-manage-drone-types-tab").on('shown.bs.tab', function (event) {
+        $.get({
+            url: "/drones/get-all-drone-types",
+            success: function (data) {
+                const selectDroneTypeElement = document.getElementById("manage-drone-type");
+                droneTypes = [];
+                selectDroneTypeElement.innerHTML = '<option value="None" hidden>None</option>';
+                $.each(data.drones, function (i, elem) {
+                    let opt = selectDroneTypeElement.appendChild(document.createElement("option"));
+                    droneTypes.push(elem);
+                    opt.text = elem.name;
+                });
+                console.log(droneTypes);
+            },
+            error: function (response) {
+                console.log(response);
+                alert("Drone type import failed");
+            }
+        });
+    });
+
+    $("#nav-add-drone-type-tab").on('shown.bs.tab', function (event) {
 
     });
 
-    $("#nav-add-drone-tab").on('showed.bs.tab', function (event) {
+    $("#nav-manage-drones-tab").on('shown.bs.tab', function (event) {
+
+    });
+
+    $("#update-drone-type-btn").click(function (event) {
+        const typeSelectElem = document.getElementById("manage-drone-type");
+
+        if (typeSelectElem.value != "None") {
+            const deleteFromElem = document.getElementById("delete-drone-type-form");
+            deleteFrom.style.display = "hidden";
+            const updateFromElem = document.getElementById("update-drone-type-form");
+            updateFrom.style.display = "block";
+
+            var updateFromInnerElements = updateFromElem.getElementsByClassName("form-group");
+
+            for (let i = 0; i < updateFromInnerElements.length; i++) {
+                for (const child of updateFromInnerElements[i].children) {
+                    if (child.id == "update-drone-type-name-old") {
+                        child.value = typeSelectElem.value;
+                    }
+                }
+            }
+        } else {
+
+        }
+
+        event.preventDefault();
+    });
+
+    $("#back-drone-type-btn").click(function (event) {
+        const typeSelectElem = document.getElementById("manage-drone-type");
+
+        if (typeSelectElem.value != "None") {
+            const updateFrom = document.getElementById("update-drone-type-form");
+            updateFrom.style.display = "hidden";
+            const deleteFrom = document.getElementById("delete-drone-type-form");
+            deleteFrom.style.display = "block";
+
+        } else {
+
+        }
+
+        event.preventDefault();
+    });
+
+    $("#nav-add-drone-tab").on('shown.bs.tab', function (event) {
         $.get({
             url: "/drones/get-all-drone-types",
             success: function (data) {
@@ -218,5 +289,6 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
+    $("#nav-manage-drone-types-tab").click(); 
 });
 

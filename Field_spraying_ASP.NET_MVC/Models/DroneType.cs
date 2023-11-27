@@ -9,22 +9,22 @@ namespace Field_spraying_ASP.NET_MVC.Models
         public string? Name { get; set; }
 
         [DynamoDBProperty]
-        private float? TankVolume { get; set; }
+        public float? TankVolume { get; set; }
 
         [DynamoDBProperty]
-        private float? SpraySwathWidthMin { get; set; }
+        public float? SpraySwathWidthMin { get; set; }
 
         [DynamoDBProperty]
-        private float? SpraySwathWidthMax { get; set; }
+        public float? SpraySwathWidthMax { get; set; }
 
         [DynamoDBProperty]
-        private float? FlowRateMin { get; set; }
+        public float? FlowRateMin { get; set; }
 
         [DynamoDBProperty]
-        private float? FlowRateMax { get; set; }
+        public float? FlowRateMax { get; set; }
 
         [DynamoDBProperty]
-        private int? MaxSpeed { get; set; }
+        public int? MaxSpeed { get; set; }
 
         public DroneType() { }
 

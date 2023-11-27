@@ -6,92 +6,204 @@
 
 <div class="row h-100">
 
-    <div class="col-md-3"></div>
+    <div class="col-md-2"></div>
 
-    <div class="col-md-3">
-        <img alt="Bootstrap Image Preview" src="https://www.layoutit.com/img/sports-q-c-140-140-3.jpg" class="img-thumbnail" style="width: 100%"/>
+    <div class="col-md-4">
+        <img alt="Bootstrap Image Preview" src="https://www.layoutit.com/img/sports-q-c-140-140-3.jpg" class="img-thumbnail" style="width: 100%" />
     </div>
 
-    <div class="col-md-3">
+    <div class="col-md-4">
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-add-drone-type-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone-type" type="button" role="tab" aria-controls="nav-add-drone-type" aria-selected="true">Add new drone type</button>
+                <button class="nav-link" id="nav-manage-drone-types-tab" data-bs-toggle="tab" data-bs-target="#nav-manage-drone-types" type="button" role="tab" aria-controls="nav-manage-drone-types" aria-selected="true">Manage drone types</button>
+                <button class="nav-link" id="nav-add-drone-type-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone-type" type="button" role="tab" aria-controls="nav-add-drone-type" aria-selected="false">Add new drone type</button>
+                <button class="nav-link" id="nav-manage-drones-tab" data-bs-toggle="tab" data-bs-target="#nav-manage-drones" type="button" role="tab" aria-controls="nav-manage-drones" aria-selected="false">Manage drones</button>
                 <button class="nav-link" id="nav-add-drone-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone" type="button" role="tab" aria-controls="nav-add-drone" aria-selected="false">Add drone</button>
             </div>
         </nav>
 
         <div class="tab-content" id="nav-tabContent">
 
-            <div class="tab-pane fade show active" id="nav-add-drone-type" role="tabpanel" aria-labelledby="nav-add-drone-type-tab">
-                <form id="add-drone-type-form" role="form">
-                    <div class="form-group">
-                        <label for="drone-name">
-                            Drone type name
-                        </label>
-                        <input type="text" class="form-control" id="drone-type-name" name="drone-type-name" />
-                    </div>
+            <div class="tab-pane fade" id="nav-manage-drone-types" role="tabpanel" aria-labelledby="nav-manage-drone-types-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="delete-drone-type-form" role="form">
 
-                    <div class="form-group">
-                        <label for="drone-tank-volume">
-                            Drone tank volume [L]
-                        </label>
-                        <input type="number" step="any" class="form-control" id="drone-tank-volume" name="drone-tank-volume" />
-                    </div>
+                            <div class="form-group">
+                                <label for="manage-drone-type">
+                                    Drone type
+                                </label>
+                                <select class="form-select" id="manage-drone-type" name="manage-drone-type">
+                                    <option value="None" hidden>None</option>
+                                </select>
+                            </div>
 
-                    <div class="form-group">
-                        <label for="drone-spray-swath-width-min">
-                            Drone spray swath width (min/max) [m]
-                        </label>
-                        <input type="number" step="any" class="form-control" placeholder="Min" id="drone-spray-swath-width-min" name="drone-spray-swath-width-min" />
-                        <input type="number" step="any" class="form-control" placeholder="Max" id="drone-spray-swath-width-max" name="drone-spray-swath-width-max" />
-                    </div>
+                            <div class="form-group">
+                                <button type="button" id="update-drone-type-btn" class="btn btn-primary">
+                                    Update
+                                </button>
+                            </div>
 
-                    <div class="form-group">
-                        <label for="drone-flow-rate-min">
-                            Flow rate (min/max) [LPM]
-                        </label>
-                        <input type="number" step="any" class="form-control" placeholder="Min" id="drone-flow-rate-min" name="drone-flow-rate-min" />
-                        <input type="number" step="any" class="form-control" placeholder="Max" id="drone-flow-rate-max" name="drone-flow-rate-max" />
-                    </div>
+                            <button type="submit" class="btn btn-danger">
+                                Delete
+                            </button>
+                        </form>
 
-                    <div class="form-group">
-                        <label for="drone-speed-max">
-                            Max drone speed [MPS]
-                        </label>
-                        <input type="number" class="form-control" placeholder="Max" id="drone-speed-max" name="drone-speed-max" />
-                    </div>
+                        <form id="update-drone-type-form" role="form" style="display: none">
+                            <div class="form-group">
+                                <label for="drone-name">
+                                    Drone type name (old)
+                                </label>
+                                <input type="text" class="form-control" id="update-drone-type-name-old" name="update-drone-type-name-old" disabled />
+                            </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Submit
-                    </button>
-                </form>
+                            <div class="form-group">
+                                <label for="drone-name">
+                                    Drone type name
+                                </label>
+                                <input type="text" class="form-control" id="update-drone-type-name" name="update-drone-type-name" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-tank-volume">
+                                    Drone tank volume [L]
+                                </label>
+                                <input type="number" step="any" class="form-control" id="update-drone-tank-volume" name="update-drone-tank-volume" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-spray-swath-width-min">
+                                    Drone spray swath width (min/max) [m]
+                                </label>
+                                <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-spray-swath-width-min" name="update-drone-spray-swath-width-min" />
+                                <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-spray-swath-width-max" name="update-drone-spray-swath-width-max" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-flow-rate-min">
+                                    Flow rate (min/max) [LPM]
+                                </label>
+                                <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-flow-rate-min" name="update-drone-flow-rate-min" />
+                                <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-flow-rate-max" name="update-drone-flow-rate-max" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-speed-max">
+                                    Max drone speed [MPS]
+                                </label>
+                                <input type="number" class="form-control" placeholder="Max" id="update-drone-speed-max" name="update-drone-speed-max" />
+                            </div>
+
+                            <div class="form-group">
+                                <button type="button" id="back-drone-type-btn" class="btn btn-secondary">
+                                    Back
+                                </button>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                Update
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        INFO HERE
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="nav-add-drone-type" role="tabpanel" aria-labelledby="nav-add-drone-type-tab">
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="add-drone-type-form" role="form">
+                            <div class="form-group">
+                                <label for="drone-name">
+                                    Drone type name
+                                </label>
+                                <input type="text" class="form-control" id="drone-type-name" name="drone-type-name" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-tank-volume">
+                                    Drone tank volume [L]
+                                </label>
+                                <input type="number" step="any" class="form-control" id="drone-tank-volume" name="drone-tank-volume" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-spray-swath-width-min">
+                                    Drone spray swath width (min/max) [m]
+                                </label>
+                                <input type="number" step="any" class="form-control" placeholder="Min" id="drone-spray-swath-width-min" name="drone-spray-swath-width-min" />
+                                <input type="number" step="any" class="form-control" placeholder="Max" id="drone-spray-swath-width-max" name="drone-spray-swath-width-max" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-flow-rate-min">
+                                    Flow rate (min/max) [LPM]
+                                </label>
+                                <input type="number" step="any" class="form-control" placeholder="Min" id="drone-flow-rate-min" name="drone-flow-rate-min" />
+                                <input type="number" step="any" class="form-control" placeholder="Max" id="drone-flow-rate-max" name="drone-flow-rate-max" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="drone-speed-max">
+                                    Max drone speed [MPS]
+                                </label>
+                                <input type="number" class="form-control" placeholder="Max" id="drone-speed-max" name="drone-speed-max" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                Submit
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        INFO HERE
+                    </div>
+                </div>
             </div>
 
             <div class="tab-pane fade" id="nav-add-drone" role="tabpanel" aria-labelledby="nav-add-drone-tab">
-                <form id="add-drone-form" role="form">
-                    <div class="form-group">
-                        <label for="drone-name">
-                            Drone name
-                        </label>
-                        <input type="text" class="form-control" id="drone-name" name="drone-name" />
-                    </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <form id="add-drone-form" role="form">
+                            <div class="form-group">
+                                <label for="drone-name">
+                                    Drone name
+                                </label>
+                                <input type="text" class="form-control" id="drone-name" name="drone-name" />
+                            </div>
 
-                    <div class="form-group">
-                        <label for="drone-type">
-                            Drone type
-                        </label>
-                        <select class="form-control" id="drone-type" name="drone-type">
-                            <option value="None" hidden>None</option>                            
-                        </select>
-                    </div>
+                            <div class="form-group">
+                                <label for="drone-type">
+                                    Drone type
+                                </label>
+                                <select class="form-control" id="drone-type" name="drone-type">
+                                    <option value="None" hidden>None</option>
+                                </select>
+                            </div>
 
-                    <button type="submit" class="btn btn-primary">
-                        Submit
-                    </button>
-                </form>
+                            <button type="submit" class="btn btn-primary">
+                                Submit
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-6">
+                        INFO HERE
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-6">
+                </div>
+                <div class="col-md-6">
+                    INFO HERE
+                </div>
             </div>
 
         </div>
-        
+
     </div>
 </div>

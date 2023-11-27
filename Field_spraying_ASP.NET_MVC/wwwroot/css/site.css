@@ -51,6 +51,14 @@ footer {
     background-color: lightgreen;
 }
 
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-control {
+    margin-bottom: 1rem;
+}
+
 .btn {
     height: 40px;
 }
