@@ -3,6 +3,7 @@
 }
 <script src="https://code.jquery.com/jquery.min.js"></script>
 <script src="~/js/drones_script.js"></script>
+<link rel="stylesheet" href="~/css/drones_view_style.css" type="text/css" />
 
 <div class="row h-100">
 
@@ -51,58 +52,58 @@
 
                         <form id="update-drone-type-form" role="form" style="display: none">
                             <div class="form-group">
-                                <label for="drone-name">
+                                <label for="update-drone-type-name-old">
                                     Drone type name (old)
                                 </label>
-                                <input type="text" class="form-control" id="update-drone-type-name-old" name="update-drone-type-name-old" disabled />
+                                <input type="text" class="form-control" id="update-drone-type-name-old" name="drone-type-name" readonly />
                             </div>
 
                             <div class="form-group">
-                                <label for="drone-name">
-                                    Drone type name
+                                <label for="update-drone-type-name">
+                                    Drone type name (new)
                                 </label>
-                                <input type="text" class="form-control" id="update-drone-type-name" name="update-drone-type-name" />
+                                <input type="text" class="form-control" id="update-drone-type-name" name="new-drone-type-name" />
                             </div>
 
                             <div class="form-group">
-                                <label for="drone-tank-volume">
+                                <label for="update-drone-tank-volume">
                                     Drone tank volume [L]
                                 </label>
-                                <input type="number" step="any" class="form-control" id="update-drone-tank-volume" name="update-drone-tank-volume" />
+                                <input type="number" step="any" class="form-control" id="update-drone-tank-volume" name="new-drone-tank-volume" />
                             </div>
 
                             <div class="form-group">
-                                <label for="drone-spray-swath-width-min">
+                                <label for="update-drone-spray-swath-width-min">
                                     Drone spray swath width (min/max) [m]
                                 </label>
-                                <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-spray-swath-width-min" name="update-drone-spray-swath-width-min" />
-                                <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-spray-swath-width-max" name="update-drone-spray-swath-width-max" />
+                                <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-spray-swath-width-min" name="new-drone-spray-swath-width-min" />
+                                <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-spray-swath-width-max" name="new-drone-spray-swath-width-max" />
                             </div>
 
                             <div class="form-group">
-                                <label for="drone-flow-rate-min">
+                                <label for="update-drone-flow-rate-min">
                                     Flow rate (min/max) [LPM]
                                 </label>
-                                <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-flow-rate-min" name="update-drone-flow-rate-min" />
-                                <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-flow-rate-max" name="update-drone-flow-rate-max" />
+                                <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-flow-rate-min" name="new-drone-flow-rate-min" />
+                                <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-flow-rate-max" name="new-drone-flow-rate-max" />
                             </div>
 
                             <div class="form-group">
-                                <label for="drone-speed-max">
+                                <label for="update-drone-speed-max">
                                     Max drone speed [MPS]
                                 </label>
-                                <input type="number" class="form-control" placeholder="Max" id="update-drone-speed-max" name="update-drone-speed-max" />
+                                <input type="number" class="form-control" placeholder="Max" id="update-drone-speed-max" name="new-drone-speed-max" />
                             </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                Update
+                            </button>
 
                             <div class="form-group">
                                 <button type="button" id="back-drone-type-btn" class="btn btn-secondary">
                                     Back
                                 </button>
                             </div>
-
-                            <button type="submit" class="btn btn-primary">
-                                Update
-                            </button>
                         </form>
                     </div>
                     <div class="col-md-6">

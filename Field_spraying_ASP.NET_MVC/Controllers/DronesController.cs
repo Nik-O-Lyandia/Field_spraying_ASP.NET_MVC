@@ -153,7 +153,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             if (success)
             {
-                return Ok("Drone type info was updated");
+                return Ok("Drone type info was successfully updated");
             }
             else
             {
