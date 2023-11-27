@@ -10,7 +10,7 @@ from matplotlib.lines import Line2D
 # from coverage_test import plot_map
 from grid_maker.make_grid import make_grid
 
-def calculate_coverage(area_name:str, polygon:list, spraying_radius):
+def calculate_coverage(area_name:str, polygon:list, loading_point: tuple, spraying_radius):
     cp_debug_level = 0
     # test_show_each_result = False
 
@@ -22,7 +22,7 @@ def calculate_coverage(area_name:str, polygon:list, spraying_radius):
     # for map_name in maps:
     compare_tb = []
 
-    grid_centers_coords, target_map = make_grid(polygon, spraying_radius)
+    grid_centers_coords, target_map = make_grid(polygon, loading_point, spraying_radius)
     # print(target_map)
 
     cp = CoveragePlanner(target_map)

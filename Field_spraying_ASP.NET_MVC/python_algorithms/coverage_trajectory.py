@@ -5,30 +5,37 @@ from utm import from_latlon, to_latlon
 
 from calculate_coverage import calculate_coverage
 
-def get_coverage_trajectory(area_name:str, spraying_radius):
+def get_coverage_trajectory(area_name: str, point_name: str, spraying_radius):
     '''
     Returns coverage trajectory for selected area.\n
     :area_name: name of the area for which grid would be made.
     '''
-    
-    TABLE_NAME = "dplm_Area"
 
     # # Creating the DynamoDB Client
     # dynamodb_client = boto3.client('dynamodb', endpoint_url='http://localhost:8000')
 
     # Creating the DynamoDB Table Resource
     dynamodb = boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
-    table = dynamodb.Table(TABLE_NAME)
+
+    area_table = dynamodb.Table("dplm_Area")
+    point_table = dynamodb.Table("dplm_Point")
 
     # Getting polygon from DB
-    response = table.get_item(
+    area_table_response = area_table.get_item(
         Key={
             'Name': area_name
         }
     )
     
+    # Getting loading point from DB
+    point_table_response = point_table.get_item(
+        Key={
+            'Name': point_name
+        }
+    )
+    
     # Getting polygon points from dataset
-    data_dict = response["Item"]
+    data_dict = area_table_response["Item"]
     polygon = []
     for item in data_dict["Coords"]:
         elem_1 = float(list(item)[0])
@@ -37,6 +44,12 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
             polygon.append((elem_1, elem_2))
         else:
             polygon.append((elem_2, elem_1))
+    
+    # Getting loading point from dataset
+    data_dict = point_table_response["Item"]
+    elem_1 = float(list(data_dict["Coords"])[0])
+    elem_2 = float(list(data_dict["Coords"])[1])
+    loading_point = (elem_1 , elem_2)
 
     # Deleting last point, because it is also the first point
     polygon.pop()
@@ -53,6 +66,8 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
     for p in polygon:
         lonlat_polygon.append(transform_wgs_lonlat(p[0],p[1]))
 
+    lonlat_loading_point = transform_wgs_lonlat(loading_point[0], loading_point[1])
+
     # print(lonlat_polygon)
         
     utm_polygon = []
@@ -62,9 +77,13 @@ def get_coverage_trajectory(area_name:str, spraying_radius):
         utm_polygon.append((res[0],res[1]))
         utm_zones_numbers_and_letters.append((res[2],res[3]))
 
+    
+    res = from_latlon(lonlat_loading_point[1], lonlat_loading_point[0])
+    utm_loading_point = (res[0], res[1])
+
     # print(utm_polygon[:4:])
 
-    coverage_trajectory = calculate_coverage(area_name, utm_polygon, spraying_radius)
+    coverage_trajectory = calculate_coverage(area_name, utm_polygon, utm_loading_point, spraying_radius)
 
     zones = list(Counter(utm_zones_numbers_and_letters).keys()) # equals to list(set(words))
     zones_counts = list(Counter(utm_zones_numbers_and_letters).values()) # counts the elements' frequency

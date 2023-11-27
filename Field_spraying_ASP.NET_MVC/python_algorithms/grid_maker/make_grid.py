@@ -1,7 +1,7 @@
 from grid_maker import polygon_grid
 from grid_maker import inner_polygon
 
-def make_grid(polygon:list, spraying_radius):
+def make_grid(polygon:list, loading_point: tuple, spraying_radius):
     '''
     Returns tuple of grid with global coordinates and numpy 2D array of coverage map for selected area.\n
     :polygon: list of polygon points.
@@ -17,7 +17,7 @@ def make_grid(polygon:list, spraying_radius):
     # print("Inner polygon created.")
 
     # print("Creating grid...")
-    grid_centers_coords, bbox, map_np = polygon_grid.create_grid(small_polygon, distance)
+    grid_centers_coords, bbox, map_np = polygon_grid.create_grid(small_polygon, loading_point, distance)
     # print("Grid created.")
 
     # print("Plotting result...")

@@ -9,23 +9,13 @@ if __name__ == "__main__":
     # args is a list of the command line args
     try:
         area_name_index = args.index('-a') + 1
+        point_name_index = args.index('-p') + 1
         coverage_radius_index = args.index('-r') + 1
     
-        result = get_coverage_trajectory( args[area_name_index], int( args[coverage_radius_index] ) )
+        result = get_coverage_trajectory( args[area_name_index], args[point_name_index], float( args[coverage_radius_index] ) )
 
-        # result = get_coverage_trajectory( 'area_3', 2 )
-        
-        # count = 0
-        # total_len = 0
-        # for r in result:
-        # for r in range(840):
-            # count = count + 1
-        #     total_len = total_len + len(str(count))
-            # print(count)
-            # print(r)
-        # print("FIN")
-        # total_len = total_len + 2
-        # print(total_len)
+        # # Debug line
+        # result = get_coverage_trajectory( 'area_2', 'point_1', 2 )
 
         print(result)
 

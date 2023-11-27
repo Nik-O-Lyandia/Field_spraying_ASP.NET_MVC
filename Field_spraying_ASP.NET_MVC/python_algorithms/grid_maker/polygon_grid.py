@@ -87,13 +87,12 @@ def create_hexgrid(polygon, side):
 
 # *********************************************
 
-def create_grid(polygon, distance):
+def create_grid(polygon: list, loading_point: tuple, distance):
     """
     Returns an tuple consists of: list of grid centers points, bbox of polygon and map for coverage planner\n
     :polygon: Initial list of polygon points.
     :distance: The size of the hexagons' OR the radius of circle.
     """
-    grid = []
 
     bbox = []
     polygon_unziped = list(zip(*polygon))
@@ -101,17 +100,17 @@ def create_grid(polygon, distance):
     bbox.append(min(polygon_unziped[1]))
     bbox.append(max(polygon_unziped[0]))
     bbox.append(max(polygon_unziped[1]))
-    
-    # grid_size = [math.ceil((bbox[2]-bbox[0]) / (2*distance)), math.ceil((bbox[3]-bbox[1]) / (2*distance))]
 
     x_min = min(bbox[0], bbox[2])
     x_max = max(bbox[0], bbox[2])
     y_min = min(bbox[1], bbox[3])
     y_max = max(bbox[1], bbox[3])
 
+    grid = []
+    map_in_tiles = []
+
     i = 0
     y_cur = y_min
-    map_in_tiles = []
     while y_cur < y_max:
         x_cur = x_min
         map_row = []
@@ -137,21 +136,30 @@ def create_grid(polygon, distance):
     grid = grid[::-1]
     map_np = map_np_rotated_90[::-1]
 
-    # ****************************************************
-    #                   TO DO
-    # ****************************************************
+    # Calculating start position as the nearest grid point to loading point
+    min_dist = None
+    min_i = 0
+    min_j = 0
+    lp_x = loading_point[0]
+    lp_y = loading_point[1]
     for i in range(len(map_np)-1,-1,-1):
         for j in range(len(map_np[i])-1,-1,-1):
             if map_np[i][j] == 0:
-                map_np[i][j] = 2
-                # print(f"{i} / {j}")
-                break
-        else:
-            continue
-        break
-    # ****************************************************
-    #                   TO DO
-    # ****************************************************
+                grid_c_x = grid[i][j][0]
+                grid_c_y = grid[i][j][1]
+
+                dist = math.dist([grid_c_x, grid_c_y], [lp_x, lp_y])
+                if min_dist != None:
+                    if dist < min_dist:
+                        min_dist = dist
+                        min_i = i
+                        min_j = j
+                else:
+                    min_dist = dist
+                    min_i = i
+                    min_j = j
+
+    map_np[min_i][min_j] = 2
 
     # Getting key points on perimeter trajectory vertices
     grid_row = []
