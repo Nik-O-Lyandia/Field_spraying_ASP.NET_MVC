@@ -32,7 +32,7 @@ namespace DynamoDb.Libs.DynamoDb
                 CreateTempTable("dplm_Area", "Name");
                 CreateTempTable("dplm_Point", "Name");
                 CreateTempTable("dplm_DroneType", "Name");
-                CreateTempTable("dplm_Drone", "Name", "DroneType");
+                CreateTempTable("dplm_Drone", "Name");
             }
             catch (Exception ex)
             {
@@ -137,26 +137,34 @@ namespace DynamoDb.Libs.DynamoDb
         {
             var retrievedObj = await this.GetObject<T>(elemName);
 
-            Type retrievedObjType = retrievedObj.GetType();
-            PropertyInfo[] retrievedObjProps = retrievedObjType.GetProperties();
-
-            Type updatedObjType = updatedObj.GetType();
-            PropertyInfo[] updatedObjProps = updatedObjType.GetProperties();
-
-            for (int i = 0; i < updatedObjProps.Length; i++)
-            {
-                if (updatedObjProps[i].GetValue(updatedObj) == null)
-                {
-                    updatedObjProps[i].SetValue(updatedObj, retrievedObjProps[i].GetValue(retrievedObj));
-                }
-            }
-
             if (retrievedObj != null)
             {
+                Type retrievedObjType = retrievedObj.GetType();
+                PropertyInfo[] retrievedObjProps = retrievedObjType.GetProperties();
+
+                Type updatedObjType = updatedObj.GetType();
+                PropertyInfo[] updatedObjProps = updatedObjType.GetProperties();
+
+                for (int i = 0; i < updatedObjProps.Length; i++)
+                {
+                    if (updatedObjProps[i].GetValue(updatedObj) == null)
+                    {
+                        updatedObjProps[i].SetValue(updatedObj, retrievedObjProps[i].GetValue(retrievedObj));
+                    }
+                }
+
                 try
                 {
-                    await _dynamoDBContext.SaveAsync(updatedObj);
-                    return true;
+                    bool deleteSuccess = await DeleteObject<T>(elemName);
+                    if (deleteSuccess)
+                    {
+                        await _dynamoDBContext.SaveAsync(updatedObj);
+                        return true;
+                    }
+                    else 
+                    {
+                        return false;
+                    }
                 }
                 catch (Exception ex)
                 {

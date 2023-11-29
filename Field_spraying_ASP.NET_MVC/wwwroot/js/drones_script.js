@@ -3,14 +3,11 @@
 //        STATIC VARIABLES SECTION
 //********************************************
 let droneTypes = []
+let drones = [];
 
 //********************************************
 //        STATIC FUNCTIONS SECTION
 //********************************************
-
-function loadDroneTypes() {
-
-}
 
 function addObj(objName) {
     var formData = $("#add-" + objName + "-form").serializeArray();
@@ -123,37 +120,172 @@ function updateObj(objName) {
     });
 }
 
+function loadDroneTypes() {
+    return new Promise(function (resolve, reject) {
+        $.get({
+            url: "/drones/get-all-drone-types",
+            success: function (data) {
+                droneTypes = [];
+                $.each(data.drone_types, function (i, elem) {
+                    droneTypes.push(elem);
+                });
+                resolve(droneTypes);
+            },
+            error: function (response) {
+                console.log(response);
+                reject(response);
+                //alert("Drone type import failed");
+            }
+        });
+    });
+}
+
+function loadDrones() {
+    return new Promise(function (resolve, reject) {
+        $.get({
+            url: "/drones/get-all-drones",
+            success: function (data) {
+                drones = [];
+                $.each(data.drones, function (i, elem) {
+                    drones.push(elem);
+                });
+                resolve(drones);
+            },
+            error: function (response) {
+                console.log(response);
+                reject(response);
+                //alert("Drones import failed");
+            }
+        });
+    });
+}
+
+function createDroneTypeTable(typeName) {
+
+    let type = droneTypes.find((type) => {
+        return type.name === typeName;
+    });
+
+    let table = document.createElement("table");
+    table.classList.add('table', 'table-dark', 'table-striped');
+
+    let tbody = document.createElement("tbody");
+
+    // ROW 1
+    let row = document.createElement("tr");
+
+    let col1 = document.createElement("th");
+    col1.setAttribute("scope", 'row');
+    col1.innerText = 'Drone Type:';
+    let col2 = document.createElement("th");
+    col2.innerText = type.name;
+
+    row.appendChild(col1);
+    row.appendChild(col2);
+    tbody.appendChild(row);
+
+    // ROW 2
+    row = document.createElement("tr");
+
+    col1 = document.createElement("th");
+    col1.setAttribute("scope", 'row');
+    col1.innerText = 'Tank Volume [L]:';
+    col2 = document.createElement("th");
+    col2.innerText = type.tankVolume;
+
+    row.appendChild(col1);
+    row.appendChild(col2);
+    tbody.appendChild(row);
+
+    // ROW 3
+    row = document.createElement("tr");
+
+    col1 = document.createElement("th");
+    col1.setAttribute("scope", 'row');
+    col1.innerText = 'Spray Swath Width [M]:';
+    col2 = document.createElement("th");
+    col2.innerText = type.spraySwathWidthMin.toString() + ' – ' + type.spraySwathWidthMax.toString();
+
+    row.appendChild(col1);
+    row.appendChild(col2);
+    tbody.appendChild(row);
+
+    // ROW 4
+    row = document.createElement("tr");
+
+    col1 = document.createElement("th");
+    col1.setAttribute("scope", 'row');
+    col1.innerText = 'Flow Rate [LPM]:';
+    col2 = document.createElement("th");
+    col2.innerText = type.flowRateMin.toString() + ' – ' + type.flowRateMax.toString();
+
+    row.appendChild(col1);
+    row.appendChild(col2);
+    tbody.appendChild(row);
+
+    // ROW 5
+    row = document.createElement("tr");
+
+    col1 = document.createElement("th");
+    col1.setAttribute("scope", 'row');
+    col1.innerText = 'Max Speed [MPS]:';
+    col2 = document.createElement("th");
+    col2.innerText = type.maxSpeed.toString();
+
+    row.appendChild(col1);
+    row.appendChild(col2);
+    tbody.appendChild(row);
+
+    table.appendChild(tbody);
+
+    let infoBoardHeaderElem = document.createElement("h2");
+    infoBoardHeaderElem.innerText = 'DRONE TYPE INFO';
+    infoBoardHeaderElem.setAttribute('style', 'text-align: center;');
+
+    let infoBoard = document.getElementById("info-board");
+    infoBoard.innerHTML = "";
+    infoBoard.appendChild(infoBoardHeaderElem);
+    infoBoard.appendChild(table);
+}
+
 //********************************************
 //          HANDLE CHANGE EVENTS
 //********************************************
 $(document).ready(function () {
 
+    //********************************************
+    //     DRONE TYPES MANAGEMENT SECTION
+    //********************************************
+
+    // ----- OPEN DRONE TYPES MANAGEMENT TAB -----
     $("#nav-manage-drone-types-tab").on('shown.bs.tab', function (event) {
+        document.getElementById("info-board").innerHTML = "";
+
         const updateForm = document.getElementById("update-drone-type-form");
         updateForm.style.display = "none";
         const deleteForm = document.getElementById("delete-drone-type-form");
         deleteForm.style.display = "block";
 
-        $.get({
-            url: "/drones/get-all-drone-types",
-            success: function (data) {
-                const selectDroneTypeElement = document.getElementById("manage-drone-type");
-                droneTypes = [];
-                selectDroneTypeElement.innerHTML = '<option value="None" hidden>None</option>';
-                $.each(data.drones, function (i, elem) {
-                    let opt = selectDroneTypeElement.appendChild(document.createElement("option"));
-                    droneTypes.push(elem);
-                    opt.text = elem.name;
-                });
-                console.log(droneTypes);
-            },
-            error: function (response) {
-                console.log(response);
-                alert("Drone type import failed");
-            }
-        });
-    });
+        loadDroneTypes().then(function (data) {
+            const selectDroneTypeElement = document.getElementById("manage-drone-type");
+            selectDroneTypeElement.innerHTML = '<option value="None" hidden>None</option>';
 
+            droneTypes.forEach((elem) => {
+                let opt = selectDroneTypeElement.appendChild(document.createElement("option"));
+                opt.value = elem.name;
+                opt.text = elem.name;
+            });
+        }).catch(function (err) {
+            console.log(err);
+        });
+
+    });
+    
+    $("#manage-drone-type").on("change", function (event) {
+        createDroneTypeTable(event.target.value);
+    });
+    
+    // ----- OPEN DRONE TYPE UPDATE FORM -----
     $("#update-drone-type-btn").click(function (event) {
         const typeSelectElem = document.getElementById("manage-drone-type");
 
@@ -214,42 +346,6 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    $("#back-drone-type-btn").click(function (event) {
-
-        const updateForm = document.getElementById("update-drone-type-form");
-        updateForm.style.display = "none";
-        const deleteForm = document.getElementById("delete-drone-type-form");
-        deleteForm.style.display = "block";
-
-        event.preventDefault();
-    });
-    $("#nav-add-drone-type-tab").on('shown.bs.tab', function (event) {
-
-    });
-
-    $("#nav-manage-drones-tab").on('shown.bs.tab', function (event) {
-
-    });
-
-    $("#nav-add-drone-tab").on('shown.bs.tab', function (event) {
-        $.get({
-            url: "/drones/get-all-drone-types",
-            success: function (data) {
-                const selectDroneTypeElement = document.getElementById("drone-type");
-                $.each(data, function (i, elem) {
-                    let opt = selectDroneTypeElement.appendChild(document.createElement("option"));
-                    opt.text = elem;
-                });
-            }
-        });
-    });
-
-    // ----- ADD DRONE TYPE -----
-    $("#add-drone-type-form").submit(function (event) {
-        addObj("drone-type");
-        event.preventDefault();
-    });
-
     // ----- DELETE DRONE TYPE -----
     $("#delete-drone-type-form").submit(function (event) {
         deleteObj("drone-type");
@@ -262,40 +358,111 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    // ----- ADD DRONE -----
-    $("#add-drone-form").submit(function (event) {
+    // ----- GO BACK TO DELETE -----
+    $("#back-drone-type-btn").click(function (event) {
 
-        var formData = $("#add-drone-form").serializeArray();
+        const updateForm = document.getElementById("update-drone-type-form");
+        updateForm.style.display = "none";
+        const deleteForm = document.getElementById("delete-drone-type-form");
+        deleteForm.style.display = "block";
 
-        let postAllowed = true;
-        $.each(formData, function (i, field) {
-            if ((field.value == "" || field.value == null) ||
-                (field.name == "drone-type" && field.value == "None")) {
+        event.preventDefault();
+    });
 
-                alert("Some fields aren't filled. Please, fill all the requsted fields.");
-                postAllowed = false;
-                return false;
-            }
+    //********************************************
+    //        DRONE TYPES ADDING SECTION
+    //********************************************
+    $("#nav-add-drone-type-tab").on('shown.bs.tab', function (event) {
+        document.getElementById("info-board").innerHTML = "";
+    });
+
+    // ----- ADD DRONE TYPE -----
+    $("#add-drone-type-form").submit(function (event) {
+        addObj("drone-type");
+        event.preventDefault();
+    });
+
+    //********************************************
+    //         DRONES MANAGEMENT SECTION
+    //********************************************
+
+    // ----- OPEN DRONES MANAGEMENT TAB -----
+    $("#nav-manage-drones-tab").on('shown.bs.tab', function (event) {
+        document.getElementById("info-board").innerHTML = "";
+
+        const updateForm = document.getElementById("update-drone-form");
+        updateForm.style.display = "none";
+        const deleteForm = document.getElementById("delete-drone-form");
+        deleteForm.style.display = "block";
+
+        loadDrones().then(function (data) {
+            const selectDroneElement = document.getElementById("manage-drone-name");
+            selectDroneElement.innerHTML = '<option value="None" hidden>None</option>';
+
+            drones.forEach((elem) => {
+                let opt = selectDroneElement.appendChild(document.createElement("option"));
+                opt.value = elem.name;
+                opt.text = elem.name;
+            });
+        }).catch(function (err) {
+            console.log(err);
         });
 
-        if (postAllowed) {
-            $.ajax({
-                type: "POST",
-                url: "/drones/add-drone",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: formData,
-                dataType: "json",
-                success: function (response) {
-                    console.log(response);
-                },
-                error: function (response) {
-                    console.log(response);
-                    alert("Export failed");
+    });
+
+    $("#manage-drone-name").on("change", function (event) {
+
+        let drone = drones.find((drone) => {
+            return drone.name === event.target.value;
+        });
+
+        createDroneTypeTable(drone.droneType);
+
+    });
+
+    // ----- OPEN DRONES UPDATE FORM -----
+    $("#update-drone-btn").click(function (event) {
+        const droneSelectElem = document.getElementById("manage-drone-name");
+
+        if (droneSelectElem.value != "None") {
+            const deleteFormElem = document.getElementById("delete-drone-form");
+            deleteFormElem.style.display = "none";
+            const updateFormElem = document.getElementById("update-drone-form");
+            updateFormElem.style.display = "block";
+
+            var updateFormInnerElements = updateFormElem.getElementsByClassName("form-group");
+
+            for (let i = 0; i < updateFormInnerElements.length; i++) {
+                for (const child of updateFormInnerElements[i].children) {
+                    if (child.id == "update-drone-name-old") {
+                        child.value = droneSelectElem.value;
+                    }
+                    if (child.id == "update-drone-name") {
+                        child.value = drones.find(obj => {
+                            return obj.name === droneSelectElem.value
+                        }).name;
+                    }
+                    if (child.id == "update-drone-type-name") {
+                        loadDroneTypes().then(function (data) {
+                            child.innerHTML = '';
+                            droneTypes.forEach((elem) => {
+                                let opt = child.appendChild(document.createElement("option"));
+                                opt.value = elem.name;
+                                opt.text = elem.name;
+                            });
+
+                            child.value = drones.find(obj => {
+                                return obj.name === droneSelectElem.value
+                            }).droneType;
+                        }).catch(function (err) {
+                            console.log(err);
+                        });
+
+                    }
                 }
-            });
+            }
+        } else {
+            alert("No drone was chosen");
         }
 
         event.preventDefault();
@@ -313,7 +480,48 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
+    // ----- GO BACK TO DELETE -----
+    $("#back-drone-btn").click(function (event) {
+
+        const updateForm = document.getElementById("update-drone-form");
+        updateForm.style.display = "none";
+        const deleteForm = document.getElementById("delete-drone-form");
+        deleteForm.style.display = "block";
+
+        event.preventDefault();
+    });
+
+    //********************************************
+    //           DRONES ADDING SECTION
+    //********************************************
+    $("#nav-add-drone-tab").on('shown.bs.tab', function (event) {
+        document.getElementById("info-board").innerHTML = "";
+
+        loadDroneTypes().then(function (data) {
+            const selectDroneTypeElement = document.getElementById("drone-type");
+            selectDroneTypeElement.innerHTML = '<option value="None" hidden>None</option>';
+
+            droneTypes.forEach((elem) => {
+                let opt = selectDroneTypeElement.appendChild(document.createElement("option"));
+                opt.value = elem.name;
+                opt.text = elem.name;
+            });
+        }).catch(function (err) {
+            console.log(err);
+        });
+    });
+
+    $("#drone-type").on("change", function (event) {
+        createDroneTypeTable(event.target.value);
+    });
+
+    // ----- ADD DRONE -----
+    $("#add-drone-form").submit(function (event) {
+        addObj("drone");
+        event.preventDefault();
+    });
+
     // Triggering first tab
-    $("#nav-manage-drone-types-tab").click(); 
+    $("#nav-manage-drone-types-tab").click();
 });
 

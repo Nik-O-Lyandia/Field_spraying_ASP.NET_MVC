@@ -51,7 +51,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             return Json(new
             {
-                drones = allDroneTypes
+                drone_types = allDroneTypes
             });
         }
 
@@ -199,7 +199,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             {
                 Drone drone = new Drone(
                     name: name,
-                    typeName: typeName);
+                    droneType: typeName);
 
                 bool success = await _dynamoDb.PutObject<Drone>(drone);
 
@@ -241,8 +241,8 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
         public async Task<IActionResult> UpdateDrone([FromBody] JsonElement formData)
         {
             string name = formData.GetProperty("drone-name").ToString();
-            string? newName = formData.GetProperty("new-drone-type-name").ToString() != "" ?
-                formData.GetProperty("new-drone-type-name").ToString() :
+            string? newName = formData.GetProperty("new-drone-name").ToString() != "" ?
+                formData.GetProperty("new-drone-name").ToString() :
                 null;
             string? newTypeName = formData.GetProperty("new-drone-type-name").ToString() != "" ?
                 formData.GetProperty("new-drone-type-name").ToString() :
@@ -250,7 +250,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             Drone newDrone = new Drone(
                     name: newName,
-                    typeName: newTypeName);
+                    droneType: newTypeName);
 
             bool success = await _dynamoDb.UpdateObject<Drone>(name, newDrone);
 

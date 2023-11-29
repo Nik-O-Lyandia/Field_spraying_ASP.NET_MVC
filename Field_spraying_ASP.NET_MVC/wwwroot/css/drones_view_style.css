@@ -1,4 +1,15 @@
 
+
 .form-control:disabled, .form-control[readonly] {
     background-color: #a9a9a9;
+}
+
+.form-text {
+    display: block;
+}
+
+.table-dark {
+    background-color: #000020;
+    --bs-table-bg: #101030;
+    --bs-table-striped-bg: #252545;
 }
