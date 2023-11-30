@@ -59,6 +59,10 @@ footer {
     margin-bottom: 1rem;
 }
 
+.form-control:disabled, .form-control[readonly] {
+    background-color: #a9a9a9;
+}
+
 .btn {
     height: 40px;
 }

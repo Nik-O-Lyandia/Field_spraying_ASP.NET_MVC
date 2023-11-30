@@ -14,10 +14,6 @@ import { platformModifierKeyOnly } from 'ol/events/condition.js';
 import { getWidth } from 'ol/extent.js';
 
 
-//********************************************
-//        STATIC FUNCTIONS SECTION
-//********************************************
-
 const styleFunction = function (feature) {
 
     const geometry = feature.getGeometry();
@@ -67,6 +63,104 @@ const styleFunction = function (feature) {
     return styles;
 };
 
+//********************************************
+//    VARIABLES INITIALIZATION SECTION
+//********************************************
+
+let workPlans = [];
+let drones = [];
+let droneTypes = [];
+
+const source = new VectorSource();
+const vector = new VectorLayer({
+    source: source,
+    style: styleFunction,
+});
+
+const map = new Map({
+    target: 'map',
+    layers: [
+        new TileLayer({
+            source: new BingMaps({
+                key: 'AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC', //AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC
+                imagerySet: 'Aerial',
+            }),
+        }),
+        vector,
+    ],
+    view: new View({
+        center: fromLonLat([33.784976, 51.915775]),
+        zoom: 16,
+    }),
+});
+
+let draw;
+const modify = new Modify({ source: source });
+let snap = new Snap({ source: source });
+
+
+//********************************************
+//          SELECTING AREA VARIABLES
+//********************************************
+let exportSelectActivated = false; // was select activated in Management section or not
+
+const selected = new Style({
+    fill: new Fill({
+        color: 'rgba(0, 0, 255, 0.2)',
+    }),
+    stroke: new Stroke({
+        color: 'rgba(0, 0, 255, 0.8)',
+        width: 2,
+    }),
+    image: new Circle({
+        radius: 7,
+        fill: new Fill({
+            color: 'rgba(0, 0, 255, 0.8)',
+        }),
+    }),
+});
+
+const hovered = new Style({
+    fill: new Fill({
+        color: 'rgba(0, 100, 255, 0.2)',
+    }),
+    stroke: new Stroke({
+        color: 'rgba(0, 100, 255, 0.6)',
+        width: 2,
+    }),
+    image: new Circle({
+        radius: 9,
+        fill: new Fill({
+            color: 'rgba(0, 100, 255, 0.6)',
+        }),
+    }),
+});
+
+// select interaction working on "singleclick"
+const management_select = new Select({ style: selected });
+const work_plan_select_polygon = new Select({ style: selected });
+const work_plan_select_point = new Select({ style: selected });
+
+// select interaction working on "pointermove"
+const selectPointerMove = new Select({
+    condition: pointerMove,
+    style: hovered,
+});
+
+let selectedFeatures = null;
+let featuresAddedThisSession = [];
+
+const exportFormElement = document.getElementById("export-form");
+const createWorkPlanForm = document.getElementById("create-work-plan-form");
+const updateWorkPlanForm = document.getElementById("update-work-plan-form");
+const deleteWorkPlanForm = document.getElementById("delete-work-plan-form");
+const deleteButton = document.getElementById("delete-feature-btn");
+
+
+//********************************************
+//        STATIC FUNCTIONS SECTION
+//********************************************
+
 function addDrawInteraction(drawType) {
     draw = new Draw({
         source: source,
@@ -90,9 +184,9 @@ function removeDrawInteractions() {
 function removeSelectInteraction() {
     selectedFeatures = null;
     map.removeInteraction(management_select);
-    map.removeInteraction(work_select);
+    map.removeInteraction(work_plan_select_polygon);
+    map.removeInteraction(work_plan_select_point);
     exportFormElement.style.display = "none";
-    workPlanFormElement.style.display = "none";
     deleteButton.style.display = "none";
 }
 
@@ -139,92 +233,67 @@ function importMap(data) {
     }
 }
 
-//********************************************
-//    VARIABLES INITIALIZATION SECTION
-//********************************************
+function loadWorkPlans() {
+    return new Promise(function (resolve, reject) {
+        $.get({
+            url: "/map/get-all-work-plans",
+            success: function (data) {
+                workPlans = [];
+                $.each(data.workPlans, function (i, elem) {
+                    workPlans.push(elem);
+                });
 
-const source = new VectorSource();
-const vector = new VectorLayer({
-    source: source,
-    style: styleFunction,
-});
+                workPlans.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
+                resolve(workPlans);
+            },
+            error: function (response) {
+                console.log(response);
+                reject(response);
+                //alert("Drones import failed");
+            }
+        });
+    });
+}
 
-const map = new Map({
-    target: 'map',
-    layers: [
-        new TileLayer({
-            source: new BingMaps({
-                key: 'AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC', //AqhyxnSQ0bUbehdW0c2bRpwMrUWQsqagpK1icErRHM9J1s0NsX-ubpej_rgamrqC
-                imagerySet: 'Aerial',
-            }),
-        }),
-        vector,
-    ],
-    view: new View({
-        center: fromLonLat([33.784976, 51.915775]),
-        zoom: 16,
-    }),
-});
+function loadDrones() {
+    return new Promise(function (resolve, reject) {
+        $.get({
+            url: "/drones/get-all-drones",
+            success: function (data) {
+                drones = [];
+                $.each(data.drones, function (i, elem) {
+                    drones.push(elem);
+                });
+                //drones.sort((a, b) => a.name - b.name); // numeric
+                drones.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0)); //string
 
-let draw;
-const modify = new Modify({ source: source });
-let snap = new Snap({ source: source });
+                resolve(drones);
+            },
+            error: function (response) {
+                console.log(response);
+                reject(response);
+                //alert("Drones import failed");
+            }
+        });
+    });
+}
 
-
-//********************************************
-//          SELECTING AREA
-//********************************************
-let exportSelectActivated = false; // was select activated in Management section or not
-
-const selected = new Style({
-    fill: new Fill({
-        color: 'rgba(0, 0, 255, 0.2)',
-    }),
-    stroke: new Stroke({
-        color: 'rgba(0, 0, 255, 0.8)',
-        width: 2,
-    }),
-    image: new Circle({
-        radius: 7,
-        fill: new Fill({
-            color: 'rgba(0, 0, 255, 0.8)',
-        }),
-    }),
-});
-
-const hovered = new Style({
-    fill: new Fill({
-        color: 'rgba(0, 100, 255, 0.2)',
-    }),
-    stroke: new Stroke({
-        color: 'rgba(0, 100, 255, 0.6)',
-        width: 2,
-    }),
-    image: new Circle({
-        radius: 9,
-        fill: new Fill({
-            color: 'rgba(0, 100, 255, 0.6)',
-        }),
-    }),
-});
-
-// select interaction working on "singleclick"
-const management_select = new Select({ style: selected });
-const work_select = new Select({ style: selected });
-
-// select interaction working on "pointermove"
-const selectPointerMove = new Select({
-    condition: pointerMove,
-    style: hovered,
-});
-
-let selectedFeatures = null;
-let featuresAddedThisSession = [];
-
-const exportFormElement = document.getElementById("export-form");
-const workPlanFormElement = document.getElementById("work-plan-form");
-const deleteButton = document.getElementById("delete-feature-button");
-
+function loadDroneType(droneType) {
+    return new Promise(function (resolve, reject) {
+        $.get({
+            url: "/drones/get-drone-type/" + droneType,
+            success: function (type) {
+                droneTypes.push(type);
+                resolve(type);
+            },
+            error: function (response) {
+                console.log(response);
+                reject(response);
+                //alert("Drones import failed");
+            }
+        });
+    });
+}
 
 //********************************************
 //        HANDLE FUNCTIONS SECTION
@@ -288,69 +357,52 @@ management_select.on("select", function (e) {
 
 });
 
-work_select.on("select", function (e) {
+work_plan_select_polygon.on("select", function (e) {
     map.removeInteraction(selectPointerMove);
     selectedFeatures = e.target.getFeatures();
 
-    //console.log(e.selected);
-    //console.log(e);
-
-    let geoms = [];
-    for (let i = 0; i < selectedFeatures.getLength(); i++) {
-        geoms.push(selectedFeatures.item(i).getGeometry());
-    }
-
-    if (selectedFeatures.getLength() <= 2) {
-
-        if (selectedFeatures.getLength() == 2) {
-            if ((geoms[0] instanceof Polygon && geoms[1] instanceof Point) ||
-                (geoms[1] instanceof Polygon && geoms[0] instanceof Point)) {
-
-                workPlanFormElement.style.display = "block";
-                var workPlanFormInnerElements = workPlanFormElement.getElementsByClassName("form-group");
-
-                for (let i = 0; i < workPlanFormInnerElements.length; i++) {
-                    if (workPlanFormInnerElements[i].id == "area-name-work-plan-group") {
-                        for (let j = 0; j < geoms.length; j++) {
-                            if (geoms[j] instanceof Polygon) {
-                                for (const child of workPlanFormInnerElements[i].children) {
-                                    if (child.id == "area-name-work-plan") {
-                                        child.value = selectedFeatures.item(j).get("name");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (workPlanFormInnerElements[i].id == "point-name-work-plan-group") {
-                        for (let j = 0; j < geoms.length; j++) {
-                            if (geoms[j] instanceof Point) {
-                                for (const child of workPlanFormInnerElements[i].children) {
-                                    if (child.id == "point-name-work-plan") {
-                                        child.value = selectedFeatures.item(j).get("name");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } else {
-                alert("Selected features must be: area and point.");
-                removeSelectInteraction();
-            }
+    if (selectedFeatures.getLength() > 0) {
+        let geoms = [];
+        for (let i = 0; i < selectedFeatures.getLength(); i++) {
+            geoms.push(selectedFeatures.item(i).getGeometry());
         }
-    } else {
-        alert("Please, select no more then 2 features: area and loading point.");
-        removeSelectInteraction();
+
+        if (geoms[0] instanceof Polygon) {
+            document.getElementById("area-name-create-work-plan").value = selectedFeatures.item(0).get("name");
+        } else {
+            alert("Selected features must be Area.");
+        }
     }
 
     if (e.deselected.length > 0 && e.selected.length == 0 && selectedFeatures.getLength() == 0) {
         removeSelectInteraction();
     }
 
+    removeSelectInteraction();
 });
 
-$("#spraying-swath-width-work-plan").on("input", function (slideEvt) {
-    $("#spraying-swath-width-work-plan-value-span").text(slideEvt.target.value);
+work_plan_select_point.on("select", function (e) {
+    map.removeInteraction(selectPointerMove);
+    selectedFeatures = e.target.getFeatures();
+
+    if (selectedFeatures.getLength() > 0) {
+        let geoms = [];
+        for (let i = 0; i < selectedFeatures.getLength(); i++) {
+            geoms.push(selectedFeatures.item(i).getGeometry());
+        }
+
+        if (geoms[0] instanceof Point) {
+            document.getElementById("point-name-create-work-plan").value = selectedFeatures.item(0).get("name");
+        } else {
+            alert("Selected features must be Point.");
+        }
+    }
+
+    if (e.deselected.length > 0 && e.selected.length == 0 && selectedFeatures.getLength() == 0) {
+        removeSelectInteraction();
+    }
+
+    removeSelectInteraction();
 });
 
 // ----- MAP AUTOUPDATE -----
@@ -381,16 +433,12 @@ $(document).ready(function () {
         removeSelectInteraction();
     });
 
-    $("#nav-work-start-tab").on('hidden.bs.tab', function () {
-        removeSelectInteraction();
-    });
-
     //********************************************
     //          DRAWING SECTION
     //********************************************
 
     // ----- DRAW POLYGON -----
-    $("#draw-polygon-button").click(function () {
+    $("#draw-polygon-btn").click(function () {
         removeDrawInteractions();
         addDrawInteraction('Polygon');
         map.addInteraction(snap);
@@ -398,30 +446,30 @@ $(document).ready(function () {
     });
 
     // ----- DRAW LOADING POINT -----
-    $("#draw-point-button").click(function () {
+    $("#draw-point-btn").click(function () {
         removeDrawInteractions();
         addDrawInteraction('Point');
         map.addInteraction(modify);
     });
 
     // ----- UNDO LAST ACTION -----
-    $("#undo-button").click(function () {
+    $("#undo-btn").click(function () {
         draw.removeLastPoint();
     });
 
     // ----- CANCEL DRAW -----
-    $("#cancel-draw-button").click(function () {
+    $("#cancel-draw-btn").click(function () {
         removeDrawInteractions();
     });
 
 
     // ----- CLEAR LAST ADDED FEATURE -----
-    $("#clear-last-feature-button").click(function () {
+    $("#clear-last-feature-btn").click(function () {
         source.removeFeature(featuresAddedThisSession.pop());
     });
 
     // ----- CLEAR ALL NEW FEATURES -----
-    $("#clear-all-new-button").click(function () {
+    $("#clear-all-new-btn").click(function () {
         for (let i = 0; i < featuresAddedThisSession.length; i++) {
             source.removeFeature(featuresAddedThisSession[i]);
         }
@@ -433,7 +481,7 @@ $(document).ready(function () {
     //********************************************
 
     // ----- IMPORT AREA ACTION -----
-    $("#import-button").click(function () {
+    $("#import-btn").click(function () {
 
         $.get("/Map/Import")
             .done(function (data) {
@@ -442,7 +490,7 @@ $(document).ready(function () {
     });
 
     // ----- AREA SELECTION -----
-    $("#management-select-button").click(function () {
+    $("#management-select-btn").click(function () {
         exportSelectActivated = true;
         map.addInteraction(selectPointerMove);
         map.addInteraction(management_select);
@@ -526,7 +574,7 @@ $(document).ready(function () {
     });
 
     // ----- DELETE FEATURE FROM DB -----
-    $("#delete-feature-button").click(function () {
+    $("#delete-feature-btn").click(function () {
 
         if (selectedFeatures != null) {
 
@@ -577,15 +625,232 @@ $(document).ready(function () {
     //           WORK START SECTION
     //********************************************
 
-    // ----- AREA SELECTION -----
-    $("#select-area-work-plan-button").click(function () {
+    // ----- REMOVE SELECTING WHEN TAB IS HIDDEN -----
+    $("#nav-work-start-tab").on('hidden.bs.tab', function () {
+        removeSelectInteraction();
+    });
 
+    // ----- OPEN WORK PLANING TAB -----
+    $("#nav-work-start-tab").on('shown.bs.tab', function () {
+        createWorkPlanForm.style.display = "none";
+        updateWorkPlanForm.style.display = "none";
+        deleteWorkPlanForm.style.display = "block";
+
+        loadWorkPlans().then(function (data) {
+            const selectWorkPlanElement = document.getElementById("select-work-plan");
+            selectWorkPlanElement.innerHTML = '<option value="None" hidden>None</option>';
+
+            workPlans.forEach((elem) => {
+                let opt = selectWorkPlanElement.appendChild(document.createElement("option"));
+                opt.value = elem.name;
+                opt.text = elem.name;
+            });
+        }).catch(function (err) {
+            console.log(err);
+        });
+    });
+
+    // ----- DELETE WORK PLAN -----
+    $("#delete-work-plan-form").submit(function (event) {
+        deleteObj("work-plan");
+        event.preventDefault();
+    });
+
+    // ----- OPEN WORK PLAN ADDING FORM -----
+    $("#create-work-plan-btn").click(function (event) {
+        createWorkPlanForm.style.display = "block";
+        updateWorkPlanForm.style.display = "none";
+        deleteWorkPlanForm.style.display = "none";
+
+        document.getElementById("spraying-swath-width-create-work-plan-group").style.display = "none";
+        document.getElementById("flow-rate-create-work-plan-group").style.display = "none";
+        document.getElementById("drone-speed-create-work-plan-group").style.display = "none";
+
+        loadDrones().then(function (data) {
+            const selectElem = document.getElementById("select-drone-create-work-plan");
+            selectElem.innerHTML = '<option value="None" hidden>None</option>';
+            drones.forEach((elem) => {
+                let opt = selectElem.appendChild(document.createElement("option"));
+                opt.value = elem.name;
+                opt.text = elem.name;
+            });
+        }).catch(function (err) {
+            console.log(err);
+        });
+    });
+
+    // ----- SET INPUT LIMITS WHEN DRONE IS SELECTED -----
+    $("#select-drone-create-work-plan").on("change", function (event) {
+
+        let drone = drones.find((drone) => {
+            return drone.name === event.target.value;
+        });
+
+        let droneType = droneTypes.find((type) => {
+            return type.name === drone.droneType;
+        });
+
+        const spraySwathWidthElem = document.getElementById("spraying-swath-width-create-work-plan");
+        const flowRateElem = document.getElementById("flow-rate-create-work-plan");
+        const speedElem = document.getElementById("drone-speed-create-work-plan");
+
+        document.getElementById("spraying-swath-width-create-work-plan-group").style.display = "block";
+        document.getElementById("flow-rate-create-work-plan-group").style.display = "block";
+        document.getElementById("drone-speed-create-work-plan-group").style.display = "block";
+
+        if (droneType == undefined) {
+            droneType = loadDroneType(drone.droneType).then(function (type) {
+                spraySwathWidthElem.setAttribute("min", type.spraySwathWidthMin);
+                spraySwathWidthElem.setAttribute("max", type.spraySwathWidthMax);
+                spraySwathWidthElem.setAttribute("value", type.spraySwathWidthMin);
+
+                flowRateElem.setAttribute("min", type.flowRateMin);
+                flowRateElem.setAttribute("max", type.flowRateMax);
+                flowRateElem.setAttribute("value", type.flowRateMin);
+
+                speedElem.setAttribute("min", 0.1);
+                speedElem.setAttribute("max", type.maxSpeed);
+                speedElem.setAttribute("value", 0.1);
+
+                $("#spraying-swath-width-create-work-plan-value-span").text(type.spraySwathWidthMin);
+                $("#flow-rate-create-work-plan-value-span").text(type.flowRateMin);
+                $("#drone-speed-create-work-plan-value-span").text(0.1);
+            }).catch(function (err) {
+                console.log(err);
+            });
+        } else {
+            spraySwathWidthElem.setAttribute("min", droneType.spraySwathWidthMin);
+            spraySwathWidthElem.setAttribute("max", droneType.spraySwathWidthMax);
+            spraySwathWidthElem.setAttribute("value", droneType.spraySwathWidthMin);
+
+            flowRateElem.setAttribute("min", droneType.flowRateMin);
+            flowRateElem.setAttribute("max", droneType.flowRateMax);
+            flowRateElem.setAttribute("value", droneType.flowRateMin);
+
+            speedElem.setAttribute("min", 0.1);
+            speedElem.setAttribute("max", droneType.maxSpeed);
+            speedElem.setAttribute("value", 0.1);
+
+            $("#spraying-swath-width-create-work-plan-value-span").text(droneType.spraySwathWidthMin);
+            $("#flow-rate-create-work-plan-value-span").text(droneType.flowRateMin);
+            $("#drone-speed-create-work-plan-value-span").text(0.1);
+        }
+    });
+
+    // ----- SHOW SLIDERS VALUES -----
+    $("#spraying-swath-width-create-work-plan").on("input", function (slideEvt) {
+        $("#spraying-swath-width-create-work-plan-value-span").text(slideEvt.target.value);
+    });
+    $("#flow-rate-create-work-plan").on("input", function (slideEvt) {
+        $("#flow-rate-create-work-plan-value-span").text(slideEvt.target.value);
+    });
+    $("#drone-speed-create-work-plan").on("input", function (slideEvt) {
+        $("#drone-speed-create-work-plan-value-span").text(slideEvt.target.value);
+    });
+
+    // ----- AREA SELECTION -----
+    $("#select-area-create-work-plan-btn").click(function () {
         map.addInteraction(selectPointerMove);
-        map.addInteraction(work_select);
+        map.addInteraction(work_plan_select_polygon);
+    });
+
+    // ----- POINT SELECTION -----
+    $("#select-point-create-work-plan-btn").click(function () {
+        map.addInteraction(selectPointerMove);
+        map.addInteraction(work_plan_select_point);
+    });
+
+    // ----- ADD WORK PLAN -----
+    $("#create-work-plan-form").submit(function (event) {
+        var formData = $("#create-work-plan-form").serializeArray();
+
+        let dataObject = {};
+
+        let postAllowed = true;
+        let addTrajectoryFeatureAllowed = true;
+
+        $.each(formData, function (i, field) {
+            if ((field.value == "" || field.value == null) ||
+                (field.name == "drone-name" && field.value == "None") ||
+                (field.name == "spraying-swath-width" && field.value == 0) ||
+                (field.name == "flow-rate" && field.value == 0) ||
+                (field.name == "drone-speed" && field.value == 0)) {
+
+                postAllowed = false;
+            }
+
+            dataObject[field.name] = field.value;
+        });
+
+        if (postAllowed) {
+            const features = source.getFeatures();
+
+            for (let j = 0; j < features.length; j++) {
+                if (dataObject["area-name"] == features[j].get('trajectory_area_name') &&
+                    dataObject["point-name"] == features[j].get('trajectory_point_name')) {
+                    addTrajectoryFeatureAllowed = false
+                }
+            }
+
+            let data = JSON.stringify(dataObject);
+            turnOverlayOn();
+
+            $.ajax({
+                type: "POST",
+                url: "/map/add-work-plan",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+                dataType: "json",
+                success: function (response) {
+                    //console.log(coords);
+
+                    if (addTrajectoryFeatureAllowed) {
+                        const feature = new Feature({
+                            geometry: new LineString(response.coords),
+                            trajectory_area_name: response.areaName,
+                            trajectory_point_name: response.pointName,
+                        });
+                        source.addFeature(feature);
+                        featuresAddedThisSession.push(feature);
+                    } else {
+                        alert("Such trajectory is already added");
+                    }
+
+                    removeSelectInteraction();
+                },
+                error: function (response) {
+                    console.log(response);
+                    alert("Add failed with response: " + response);
+                }
+            })
+                .done(function (data) {
+                    turnOverlayOff();
+                });;
+        } else {
+            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+        }
+
+        event.preventDefault();
+    });
+
+    // ----- UPDATE WORK PLAN -----
+    $("#update-work-plan-form").submit(function (event) {
+        updateObj("work-plan");
+        event.preventDefault();
+    });
+
+    // ----- GO BACK TO DELETE WORK PLAN FORM -----
+    $("#back-from-create-work-plan-btn").click(function (event) {
+        createWorkPlanForm.style.display = "none";
+        updateWorkPlanForm.style.display = "none";
+        deleteWorkPlanForm.style.display = "block";
     });
 
     // ----- CALCULATE COVERAGE TRAJECTORY -----
-    $("#build-trajectory-button").click(function () {
+    $("#build-trajectory-btn").click(function () {
 
         var formDataObject = {};
 
@@ -598,28 +863,6 @@ $(document).ready(function () {
             if (selectedFeatures.getLength() == 2) {
                 if ((geoms[0] instanceof Polygon && geoms[1] instanceof Point) ||
                     (geoms[1] instanceof Polygon && geoms[0] instanceof Point)) {
-
-                    for (let i = 0; i < geoms.length; i++) {
-                        if (geoms[i] instanceof Polygon) {
-                            if ($("#area-name-work-plan").val() != null) {
-                                formDataObject.area_name = $("#area-name-work-plan").val();
-                            } else {
-                                alert("Feature has no name. Please export new added features first.");
-                                return;
-                            }
-                        }
-                        if (geoms[i] instanceof Point) {
-                            if ($("#point-name-work-plan").val() != null) {
-                                formDataObject.point_name = $("#point-name-work-plan").val();
-                            } else {
-                                alert("Feature has no name. Please export new added features first.");
-                                return;
-                            }
-                        }
-                    }
-                    formDataObject.spraying_diameter = $("#spraying-swath-width-work-plan").val();
-                    //formDataObject.spraying_diameter = 20;
-
 
                     const features = source.getFeatures();
 

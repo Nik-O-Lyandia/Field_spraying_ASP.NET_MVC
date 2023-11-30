@@ -129,6 +129,7 @@ function loadDroneTypes() {
                 $.each(data.drone_types, function (i, elem) {
                     droneTypes.push(elem);
                 });
+                droneTypes.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
                 resolve(droneTypes);
             },
             error: function (response) {
@@ -149,6 +150,7 @@ function loadDrones() {
                 $.each(data.drones, function (i, elem) {
                     drones.push(elem);
                 });
+                drones.sort((a, b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0));
                 resolve(drones);
             },
             error: function (response) {

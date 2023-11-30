@@ -27,12 +27,15 @@ namespace DynamoDb.Libs.DynamoDb
 
         public void CreateTables()
         {
+            
             try
             {
                 CreateTempTable("dplm_Area", "Name");
                 CreateTempTable("dplm_Point", "Name");
                 CreateTempTable("dplm_DroneType", "Name");
                 CreateTempTable("dplm_Drone", "Name");
+                CreateTempTable("dplm_WorkPlan", "Name");
+                CreateTempTable("dplm_CoverageTrajectory", "AreaName", "PointName");
             }
             catch (Exception ex)
             {
@@ -75,15 +78,42 @@ namespace DynamoDb.Libs.DynamoDb
         }
 
         /// <summary>
+        /// Retrieves object specified by <paramref name="elemName"/>, <paramref name="rangeKey"/> and class <typeparamref name="T"/>.
+        /// </summary>
+        public async Task<T?> GetObject<T>(string hashKey, string rangeKey) where T : class
+        {
+            try
+            {
+                return await _dynamoDBContext.LoadAsync<T>(hashKey, rangeKey);
+            }
+            catch (Exception ex)
+            {
+                // LOG HERE
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Puts new object <paramref name="obj"/> into DB.
         /// </summary>
         public async Task<bool> PutObject<T>(T obj) where T : class
         {
             Type objType = obj.GetType();
-            PropertyInfo objNameProp = objType.GetProperty("Name");
-            object objName = objNameProp.GetValue(obj);
-
-            var loadedObject = this.GetObject<T>((string)objName);
+            PropertyInfo? objNameProp = objType.GetProperty("Name");
+            Task<T?> loadedObject;
+            if (objNameProp != null)
+            {
+                object objName = objNameProp.GetValue(obj);
+                loadedObject = this.GetObject<T>((string)objName);
+            }
+            else
+            {
+                PropertyInfo? objPKprop = objType.GetProperty("AreaName");
+                PropertyInfo? objSKprop = objType.GetProperty("PointName");
+                object objPK = objPKprop.GetValue(obj);
+                object objSK = objSKprop.GetValue(obj);
+                loadedObject = this.GetObject<T>((string)objPK, (string)objSK);
+            }
 
             if (loadedObject.Result == null)
             {
@@ -113,6 +143,32 @@ namespace DynamoDb.Libs.DynamoDb
             {
                 await _dynamoDBContext.DeleteAsync<T>(elemName);
                 var resultObj = await this.GetObject<T>(elemName);
+
+                if (resultObj == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                // LOG HERE
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deletes existing object specified by <paramref name="hashKey"/>, <paramref name="rangeKey"/> and class <typeparamref name="T"/>.
+        /// </summary>
+        public async Task<bool> DeleteObject<T>(string hashKey, string rangeKey) where T : class
+        {
+            try
+            {
+                await _dynamoDBContext.DeleteAsync<T>(hashKey, rangeKey);
+                var resultObj = await this.GetObject<T>(hashKey, rangeKey);
 
                 if (resultObj == null)
                 {
