@@ -71,8 +71,8 @@ def calculate_coverage(area_name:str, polygon:list, loading_point: tuple, sprayi
     # cp.print_trajectory(trajectory=compare_tb[0][5])
 
     # # Plot the complete trajectory map
-    plot_map(target_map, compare_tb[0][5], map_name=area_name,
-            params_str="Heuristic:{}, Initial Orientation: {}".format(compare_tb[0][0], cp.movement_name[compare_tb[0][1]]))
+    # plot_map(target_map, compare_tb[0][5], map_name=area_name,
+    #         params_str="Heuristic:{}, Initial Orientation: {}".format(compare_tb[0][0], cp.movement_name[compare_tb[0][1]]))
 
     # # Print the best path
     # print("\nList of coordinates of the best path: [map:{}, initial orientation: {} ({}), coverage path Heuristic:{}]".format(

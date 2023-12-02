@@ -311,6 +311,77 @@ function loadDroneType(droneType) {
     });
 }
 
+function deleteObj(objName) {
+    var formData = $("#delete-" + objName + "-form").serializeArray();
+
+    let dataObject = {};
+
+    let postAllowed = true;
+
+    $.each(formData, function (i, field) {
+        if (field.value == "" || field.value == null) {
+            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            postAllowed = false;
+            return false;
+        }
+        dataObject[field.name] = field.value;
+    });
+
+    let data = JSON.stringify(dataObject);
+
+    if (postAllowed) {
+        $.ajax({
+            type: "DELETE",
+            url: "/map/delete-" + objName,
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: data,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                alert(response);
+            },
+            error: function (response) {
+                console.log(response);
+                alert("Delete failed with response: " + response);
+            }
+        });
+    }
+}
+
+function updateObj(objName) {
+    var formData = $("#update-" + objName + "-form").serializeArray();
+
+    let dataObject = {};
+
+    $.each(formData, function (i, field) {
+        dataObject[field.name] = field.value;
+    });
+
+    let data = JSON.stringify(dataObject);
+
+    $.ajax({
+        type: "PUT",
+        url: "/map/update-" + objName,
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: data,
+        dataType: "json",
+        success: function (response) {
+            console.log(response);
+            alert(response);
+        },
+        error: function (response) {
+            console.log(response);
+            alert("Update failed with response: " + response);
+        }
+    });
+}
+
 function startWorkPlan(workPlanName) {
 
     var obj = {};
@@ -385,7 +456,7 @@ function startWorkPlanMonitoring(workPlanName) {
                 //alert("Drones import failed");
             }
         });
-    }, 350);
+    }, 250);
 
     workPlanMonitors.push(intervalIndex);
 }
@@ -826,6 +897,12 @@ $(document).ready(function () {
         });
     });
 
+    // ----- START WORK PLAN -----
+    $("#start-work-plan-btn").click(function (event) {
+        let workPlanName = document.getElementById("select-work-plan").value;
+        startWorkPlan(workPlanName);
+    });
+
     // ----- DELETE WORK PLAN -----
     $("#delete-work-plan-form").submit(function (event) {
         deleteObj("work-plan");
@@ -992,6 +1069,9 @@ $(document).ready(function () {
                         });
                         source.addFeature(feature);
                         featuresAddedThisSession.push(feature);
+
+                        createWorkPlanForm.style.display = "none";
+                        deleteWorkPlanForm.style.display = "block";
                     } else {
                         alert("Such trajectory is already added");
                     }
@@ -1013,10 +1093,130 @@ $(document).ready(function () {
         event.preventDefault();
     });
 
-    // ----- START WORK PLAN -----
-    $("#start-work-plan-btn").click(function (event) {
+    // ----- GO BACK TO DELETE WORK PLAN FORM -----
+    $("#back-from-create-work-plan-btn").click(function (event) {
+        createWorkPlanForm.style.display = "none";
+        updateWorkPlanForm.style.display = "none";
+        deleteWorkPlanForm.style.display = "block";
+    });
+
+    // ----- OPEN WORK PLAN UPDATE FORM -----
+    $("#update-work-plan-btn").click(function (event) {
         let workPlanName = document.getElementById("select-work-plan").value;
-        startWorkPlan(workPlanName);
+
+        if (workPlanName != "None") {
+            updateWorkPlanForm.style.display = "block";
+            deleteWorkPlanForm.style.display = "none";
+
+            document.getElementById("spraying-swath-width-update-work-plan-group").style.display = "none";
+            document.getElementById("flow-rate-update-work-plan-group").style.display = "none";
+            document.getElementById("drone-speed-update-work-plan-group").style.display = "none";
+
+            let workPlanNameOldElem = document.getElementById("work-plan-name-update-work-plan-old");
+            let workPlanNameElem = document.getElementById("work-plan-name-update-work-plan");
+            let areaNameElem = document.getElementById("area-name-update-work-plan");
+            let pointNameElem = document.getElementById("point-name-update-work-plan");
+            let droneNameElem = document.getElementById("select-drone-update-work-plan");
+            let sprayingWidthElem = document.getElementById("spraying-swath-width-update-work-plan");
+            let flowRateElem = document.getElementById("flow-rate-update-work-plan");
+            let droneSpeedElem = document.getElementById("drone-speed-update-work-plan");
+
+            workPlanNameOldElem.value = workPlanName;
+            workPlanNameElem.value = workPlans.find(obj => {
+                return obj.name === workPlanName
+            }).name;
+            areaNameElem.value = workPlans.find(obj => {
+                return obj.name === workPlanName
+            }).areaName;
+            pointNameElem.value = workPlans.find(obj => {
+                return obj.name === workPlanName
+            }).pointName;
+            sprayingWidthElem.value = workPlans.find(obj => {
+                return obj.name === workPlanName
+            }).spraySwathWidth;
+            flowRateElem.value = workPlans.find(obj => {
+                return obj.name === workPlanName
+            }).flowRate;
+            droneSpeedElem.value = workPlans.find(obj => {
+                return obj.name === workPlanName
+            }).droneSpeed;
+
+            loadDrones().then(function (data) {
+                droneNameElem.innerHTML = '<option value="None" hidden>None</option>';
+                drones.forEach((elem) => {
+                    let opt = droneNameElem.appendChild(document.createElement("option"));
+                    opt.value = elem.name;
+                    opt.text = elem.name;
+                });
+                droneNameElem.value = workPlans.find(obj => {
+                    return obj.name === workPlanName
+                }).droneName;
+            }).catch(function (err) {
+                console.log(err);
+            });
+        } else {
+            alert("No work plan was chosen");
+        }
+
+        event.preventDefault();
+    });
+
+    // ----- SET INPUT LIMITS WHEN DRONE IS SELECTED -----
+    $("#select-drone-update-work-plan").on("change", function (event) {
+
+        let drone = drones.find((drone) => {
+            return drone.name === event.target.value;
+        });
+
+        let droneType = droneTypes.find((type) => {
+            return type.name === drone.droneType;
+        });
+
+        const spraySwathWidthElem = document.getElementById("spraying-swath-width-update-work-plan");
+        const flowRateElem = document.getElementById("flow-rate-update-work-plan");
+        const speedElem = document.getElementById("drone-speed-update-work-plan");
+
+        document.getElementById("spraying-swath-width-update-work-plan-group").style.display = "block";
+        document.getElementById("flow-rate-update-work-plan-group").style.display = "block";
+        document.getElementById("drone-speed-update-work-plan-group").style.display = "block";
+
+        if (droneType == undefined) {
+            droneType = loadDroneType(drone.droneType).then(function (type) {
+                spraySwathWidthElem.setAttribute("min", type.spraySwathWidthMin);
+                spraySwathWidthElem.setAttribute("max", type.spraySwathWidthMax);
+                spraySwathWidthElem.setAttribute("value", type.spraySwathWidthMin);
+
+                flowRateElem.setAttribute("min", type.flowRateMin);
+                flowRateElem.setAttribute("max", type.flowRateMax);
+                flowRateElem.setAttribute("value", type.flowRateMin);
+
+                speedElem.setAttribute("min", 0.1);
+                speedElem.setAttribute("max", type.maxSpeed);
+                speedElem.setAttribute("value", 0.1);
+
+                $("#spraying-swath-width-update-work-plan-value-span").text(type.spraySwathWidthMin);
+                $("#flow-rate-update-work-plan-value-span").text(type.flowRateMin);
+                $("#drone-speed-update-work-plan-value-span").text(0.1);
+            }).catch(function (err) {
+                console.log(err);
+            });
+        } else {
+            spraySwathWidthElem.setAttribute("min", droneType.spraySwathWidthMin);
+            spraySwathWidthElem.setAttribute("max", droneType.spraySwathWidthMax);
+            spraySwathWidthElem.setAttribute("value", droneType.spraySwathWidthMin);
+
+            flowRateElem.setAttribute("min", droneType.flowRateMin);
+            flowRateElem.setAttribute("max", droneType.flowRateMax);
+            flowRateElem.setAttribute("value", droneType.flowRateMin);
+
+            speedElem.setAttribute("min", 0.1);
+            speedElem.setAttribute("max", droneType.maxSpeed);
+            speedElem.setAttribute("value", 0.1);
+
+            $("#spraying-swath-width-update-work-plan-value-span").text(droneType.spraySwathWidthMin);
+            $("#flow-rate-update-work-plan-value-span").text(droneType.flowRateMin);
+            $("#drone-speed-update-work-plan-value-span").text(0.1);
+        }
     });
 
     // ----- UPDATE WORK PLAN -----
@@ -1026,78 +1226,11 @@ $(document).ready(function () {
     });
 
     // ----- GO BACK TO DELETE WORK PLAN FORM -----
-    $("#back-from-create-work-plan-btn").click(function (event) {
+    $("#back-from-update-work-plan-btn").click(function (event) {
         createWorkPlanForm.style.display = "none";
         updateWorkPlanForm.style.display = "none";
         deleteWorkPlanForm.style.display = "block";
     });
 
-    // ----- CALCULATE COVERAGE TRAJECTORY -----
-    $("#build-trajectory-btn").click(function () {
-
-        var formDataObject = {};
-
-        if (selectedFeatures != null) {
-            let geoms = [];
-            for (let i = 0; i < selectedFeatures.getLength(); i++) {
-                geoms.push(selectedFeatures.item(i).getGeometry());
-            }
-
-            if (selectedFeatures.getLength() == 2) {
-                if ((geoms[0] instanceof Polygon && geoms[1] instanceof Point) ||
-                    (geoms[1] instanceof Polygon && geoms[0] instanceof Point)) {
-
-                    const features = source.getFeatures();
-
-                    let addFeaturePermission = true;
-                    for (let j = 0; j < features.length; j++) {
-                        if (formDataObject.area_name == features[j].get('trajectory_area_name') &&
-                            formDataObject.point_name == features[j].get('trajectory_point_name')) {
-                            addFeaturePermission = false
-                        }
-                    }
-
-                    if (addFeaturePermission) {
-                        turnOverlayOn();
-
-                        $.ajax({
-                            type: "GET",
-                            url: "/Map/build-trajectory",
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            data: formDataObject,
-                            dataType: "json",
-                            success: function (coords) {
-                                //console.log(coords);
-
-                                const feature = new Feature({
-                                    geometry: new LineString(coords),
-                                    trajectory_area_name: formDataObject.area_name,
-                                    trajectory_point_name: formDataObject.point_name,
-                                });
-                                source.addFeature(feature);
-                                featuresAddedThisSession.push(feature);
-
-                                removeSelectInteraction();
-                            },
-                            error: function (response) {
-                                console.log(response);
-                                alert("Export failed");
-                            }
-                        })
-                            .done(function (data) {
-                                turnOverlayOff();
-                            });
-                    } else {
-                        alert("Such trajectory is already added");
-                    }
-                } else {
-                    alert("Select only 1 polygon or 1 loading point or both of them at the same time.");
-                }
-            }
-        }
-    });
 });
 

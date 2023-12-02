@@ -6,32 +6,32 @@ namespace Field_spraying_ASP.NET_MVC.Models
     public class WorkPlan
     {
         [DynamoDBHashKey]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DynamoDBProperty]
-        public string AreaName { get; set; }
+        public string? AreaName { get; set; }
 
         [DynamoDBProperty]
-        public string PointName { get; set; }
+        public string? PointName { get; set; }
 
         [DynamoDBProperty]
-        public string TrajectoryName { get; set; }
+        public string? TrajectoryName { get; set; }
 
         [DynamoDBProperty]
-        public string DroneName { get; set; }
+        public string? DroneName { get; set; }
 
         [DynamoDBProperty]
-        public float SpraySwathWidth { get; set; }
+        public float? SpraySwathWidth { get; set; }
 
         [DynamoDBProperty]
-        public float FlowRate { get; set; }
+        public float? FlowRate { get; set; }
 
         [DynamoDBProperty]
-        public float DroneSpeed { get; set; }
+        public float? DroneSpeed { get; set; }
 
         public WorkPlan() { }
 
-        public WorkPlan(string name, string areaName, string pointName, string trajectoryName, string droneName, float spraySwathWidth, float flowRate, float droneSpeed)
+        public WorkPlan(string? name, string? areaName, string? pointName, string? trajectoryName, string? droneName, float? spraySwathWidth, float? flowRate, float? droneSpeed)
         {
             Name = name;
             AreaName = areaName;

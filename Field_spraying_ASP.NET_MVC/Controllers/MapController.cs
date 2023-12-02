@@ -199,9 +199,9 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             try
             {
-                CoverageTrajectory trajectory = new CoverageTrajectory() { Name = areaName + "-" + pointName, AreaName = areaName, PointName = pointName, Coords = routeArray };
+                CoverageTrajectory trajectory = new CoverageTrajectory() { Name = workPlanName + "-" + areaName + "-" + pointName, AreaName = areaName, PointName = pointName, Coords = routeArray };
 
-                CoverageTrajectory? trajectoryFromDb = await _dynamoDb.GetObject<CoverageTrajectory>(areaName, pointName);
+                CoverageTrajectory? trajectoryFromDb = await _dynamoDb.GetObject<CoverageTrajectory>(trajectory.Name);
 
                 if (trajectoryFromDb == null)
                 {
@@ -248,14 +248,14 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                     if (trajectoryPutSuccess)
                     {
                         WorkPlan workPlan = new WorkPlan(
-                        name: workPlanName,
-                        areaName: areaName,
-                        trajectoryName: trajectory.Name,
-                        pointName: pointName,
-                        droneName: droneName,
-                        spraySwathWidth: sprayingSwathWidth,
-                        flowRate: flowRate,
-                        droneSpeed: droneSpeed);
+                            name: workPlanName,
+                            areaName: areaName,
+                            trajectoryName: trajectory.Name,
+                            pointName: pointName,
+                            droneName: droneName,
+                            spraySwathWidth: sprayingSwathWidth,
+                            flowRate: flowRate,
+                            droneSpeed: droneSpeed);
 
                         bool workPlanPutSuccess = await _dynamoDb.PutObject<WorkPlan>(workPlan);
 
@@ -282,26 +282,148 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             }
         }
 
-        [Route("delete-work-plan")]
-        [HttpPost]
-        public async Task<IActionResult> DeleteWorkPlan([FromBody] JsonElement formData)
+        [Route("update-work-plan")]
+        [HttpPut]
+        public async Task<IActionResult> UpdateWorkPlan([FromBody] JsonElement formData)
         {
             var workPlanName = formData.GetProperty("work-plan-name").ToString();
+            var newWorkPlanName = formData.GetProperty("new-work-plan-name").ToString() != "" ?
+                formData.GetProperty("new-work-plan-name").ToString() :
+                null;
+            var areaName = formData.GetProperty("area-name").ToString() != "" ?
+                formData.GetProperty("area-name").ToString() :
+                null;
+            var pointName = formData.GetProperty("point-name").ToString() != "" ?
+                formData.GetProperty("point-name").ToString() :
+                null;
+            var droneName = formData.GetProperty("drone-name").ToString() != "None" ?
+                formData.GetProperty("drone-name").ToString() :
+                null;
+            float? sprayingSwathWidth = formData.GetProperty("spraying-swath-width").ToString() != "" ? 
+                float.Parse(formData.GetProperty("spraying-swath-width").ToString().Replace(",", "."), CultureInfo.InvariantCulture) :
+                null;
+            float? flowRate = formData.GetProperty("flow-rate").ToString() != "" ?
+                float.Parse(formData.GetProperty("flow-rate").ToString().Replace(",", "."), CultureInfo.InvariantCulture) :
+                null;
+            float? droneSpeed = formData.GetProperty("drone-speed").ToString() != "" ?
+                float.Parse(formData.GetProperty("drone-speed").ToString().Replace(",", "."), CultureInfo.InvariantCulture) :
+                null;
 
-            var workPlan = await _dynamoDb.GetObject<WorkPlan>(workPlanName);
+            string contentRootPath = _env.ContentRootPath;
+            string cppFilePath = contentRootPath + @"\python_algorithms\main.py";
+            double[][] routeArray = new double[0][];
 
-            var workPlanSuccess = await _dynamoDb.DeleteObject<WorkPlan>(workPlanName);
-            var trajectorySuccess = await _dynamoDb.DeleteObject<CoverageTrajectory>(workPlan.AreaName, workPlan.PointName);
+            CoverageTrajectory trajectory = new CoverageTrajectory() { Name = workPlanName + "-" + areaName + "-" + pointName, AreaName = areaName, PointName = pointName, Coords = routeArray };
 
-            if (workPlanSuccess && trajectorySuccess)
+            CoverageTrajectory? trajectoryFromDb = await _dynamoDb.GetObject<CoverageTrajectory>(trajectory.Name);
+
+            WorkPlan workPlan = new WorkPlan(
+                name: newWorkPlanName,
+                areaName: areaName,
+                trajectoryName: null,
+                pointName: pointName,
+                droneName: droneName,
+                spraySwathWidth: sprayingSwathWidth,
+                flowRate: flowRate,
+                droneSpeed: droneSpeed);
+
+            var success = await _dynamoDb.GetObject<WorkPlan>(workPlanName);
+
+            if (trajectoryFromDb != null)
             {
-                return Ok("Work plan was deleted");
+                if (trajectoryFromDb.AreaName != areaName || trajectoryFromDb.PointName != pointName)
+                {
+                    CmdRun cmdRun = new CmdRun();
+                    string arguments = "-a " + areaName + " -p " + pointName + " -r " + (sprayingSwathWidth / 2.0).ToString().Replace(",", ".");
+                    var route = cmdRun.RunPython(cppFilePath, arguments);
+
+                    //Debug.WriteLine(route);
+                    var routeCoords = route.Split(",");
+                    routeArray = new double[routeCoords.Length / 2][];
+
+                    string firstCoordinate = "";
+                    string secondCoordinate = "";
+                    for (int i = 0; i < routeCoords.Length; i++)
+                    {
+                        if (i % 2 == 0)
+                        {
+                            firstCoordinate = routeCoords[i];
+                            firstCoordinate = firstCoordinate.Trim();
+                            if (firstCoordinate.IndexOf('[') != -1) firstCoordinate = firstCoordinate.Remove(firstCoordinate.IndexOf('['), 1);
+                            if (firstCoordinate.IndexOf('(') != -1) firstCoordinate = firstCoordinate.Remove(firstCoordinate.IndexOf('('), 1);
+                        }
+                        if (i % 2 == 1)
+                        {
+                            secondCoordinate = routeCoords[i];
+                            secondCoordinate = secondCoordinate.Trim();
+                            if (secondCoordinate.IndexOf(')') != -1) secondCoordinate = secondCoordinate.Remove(secondCoordinate.IndexOf(')'), 1);
+                            if (secondCoordinate.IndexOf(']') != -1) secondCoordinate = secondCoordinate.Remove(secondCoordinate.IndexOf(']'), 1);
+                            var coord1 = double.Parse(firstCoordinate, NumberStyles.Any, CultureInfo.InvariantCulture);
+                            var coord2 = double.Parse(secondCoordinate, NumberStyles.Any, CultureInfo.InvariantCulture);
+
+                            routeArray[i / 2] = new double[2];
+                            routeArray[i / 2][0] = coord1;
+                            routeArray[i / 2][1] = coord2;
+                        }
+                    }
+
+                    if (!routeArray.Any()) return BadRequest("No route was added to coverage trajectory");
+
+                    trajectory.Coords = routeArray;
+
+                    bool trajectoryPutSuccess = await _dynamoDb.PutObject<CoverageTrajectory>(trajectory);
+
+                    if (trajectoryPutSuccess)
+                    {
+                        workPlan.TrajectoryName = trajectory.Name;
+                    }
+                    else
+                    {
+                        return BadRequest("Coverage trajectory wasn't added");
+                    }
+                }
+            }
+
+            bool updateSuccess = await _dynamoDb.UpdateObject<WorkPlan>(workPlanName, workPlan);
+
+            if (updateSuccess)
+            {
+                return Ok("Work plan was updated");
             }
             else
             {
-                return BadRequest("No work plan with such name to delete");
+                return BadRequest("No work plan with such name was found");
             }
 
+        }
+
+        [Route("delete-work-plan")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteWorkPlan([FromBody] JsonElement formData)
+        {
+            try
+            {
+                var workPlanName = formData.GetProperty("work-plan").ToString();
+
+                var workPlan = await _dynamoDb.GetObject<WorkPlan>(workPlanName);
+
+                var trajectorySuccess = await _dynamoDb.DeleteObject<CoverageTrajectory>(workPlan.TrajectoryName);
+                var workPlanSuccess = await _dynamoDb.DeleteObject<WorkPlan>(workPlanName);
+
+                if (workPlanSuccess && trajectorySuccess)
+                {
+                    return Ok("Work plan was deleted");
+                }
+                else
+                {
+                    return BadRequest("No work plan with such name to delete");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return BadRequest(ex.Message);
+            }
         }
 
         [Route("start-work-plan")]

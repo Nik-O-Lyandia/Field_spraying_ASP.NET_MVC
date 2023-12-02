@@ -68,65 +68,65 @@
                 <form id="delete-work-plan-form" role="form">
                     <div class="form-group">
                         <button type="button" id="create-work-plan-btn" class="btn btn-success">
-                            Create
+                            Створити план
                         </button>
                     </div>
 
                     <div class="form-group">
                         <label for="select-work-plan">
-                            Work plan name
+                            Назва плану
                         </label>
                         <select class="form-select" id="select-work-plan" name="work-plan">
-                            <option value="None" hidden>None</option>
+                            <option value="None" hidden>[Обрати]</option>
                         </select>
                     </div>
 
                     <div class="form-group">
                         <button type="button" id="start-work-plan-btn" class="btn btn-success">
-                            Запустити
+                            Запустити план
                         </button>
                     </div>
 
                     <div class="form-group">
                         <button type="button" id="update-work-plan-btn" class="btn btn-primary">
-                            Update
+                            Оновити план
                         </button>
                     </div>
 
                     <button type="submit" class="btn btn-danger">
-                        Delete
+                        Видалити план
                     </button>
                 </form>
 
                 <form id="create-work-plan-form" style="display: none">
-                    <div id="work-plan-name-create-work-plan-group" class="form-group">
-                        <label for="work-plan-name-create-work-plan" class="form-label">Work plan name:</label>
+                    <div class="form-group">
+                        <label for="work-plan-name-create-work-plan" class="form-label">Назва плану:</label>
                         <input type="text" class="form-control" id="work-plan-name-create-work-plan" name="work-plan-name" />
                     </div>
 
-                    <div id="area-name-create-work-plan-group" class="form-group">
-                        <label for="area-name-create-work-plan" class="form-label">Area name:</label>
+                    <div class="form-group">
+                        <label for="area-name-create-work-plan" class="form-label">Назва робочої області:</label>
                         <input type="text" class="form-control" id="area-name-create-work-plan" name="area-name" readonly />
                         <button id="select-area-create-work-plan-btn" type="button" class="btn btn-primary">Select area</button>
                     </div>
 
-                    <div id="point-name-create-work-plan-group" class="form-group">
-                        <label for="point-name-create-work-plan" class="form-label">Loading point name:</label>
+                    <div class="form-group">
+                        <label for="point-name-create-work-plan" class="form-label">Назва точки завантаження:</label>
                         <input type="text" class="form-control" id="point-name-create-work-plan" name="point-name" readonly />
                         <button id="select-point-create-work-plan-btn" type="button" class="btn btn-primary">Select point</button>
                     </div>
 
                     <div class="form-group">
                         <label for="select-drone-create-work-plan">
-                            Drone
+                            Дрон:
                         </label>
                         <select class="form-select" id="select-drone-create-work-plan" name="drone-name">
-                            <option value="None" hidden>None</option>
+                            <option value="None" hidden>[Обрати]</option>
                         </select>
                     </div>
 
                     <div id="spraying-swath-width-create-work-plan-group" class="form-group" style="display: none;">
-                        <label for="spraying-swath-width-create-work-plan" class="form-label">Spraying swath width [m]:</label>
+                        <label for="spraying-swath-width-create-work-plan" class="form-label">Ширина смуги обприскування [м]:</label>
                         <div class="row">
                             <div class="col-6">
                                 <input type="range" class="form-range" min="0" max="1" step="0.5" value="0" id="spraying-swath-width-create-work-plan" name="spraying-swath-width">
@@ -138,7 +138,7 @@
                     </div>
 
                     <div id="flow-rate-create-work-plan-group" class="form-group" style="display: none;">
-                        <label for="flow-rate-create-work-plan" class="form-label">Flow rate [LPM]:</label>
+                        <label for="flow-rate-create-work-plan" class="form-label">Об'ємна витрата [л/хв]:</label>
                         <div class="row">
                             <div class="col-6">
                                 <input type="range" class="form-range" min="0" max="1" step="0.5" value="0" id="flow-rate-create-work-plan" name="flow-rate">
@@ -150,7 +150,7 @@
                     </div>
 
                     <div id="drone-speed-create-work-plan-group" class="form-group" style="display: none;">
-                        <label for="drone-speed-create-work-plan" class="form-label">Drone speed [MPS]:</label>
+                        <label for="drone-speed-create-work-plan" class="form-label">Швидкість дрона [м/с]:</label>
                         <div class="row">
                             <div class="col-6">
                                 <input type="range" class="form-range" min="0" max="1" step="0.1" value="0" id="drone-speed-create-work-plan" name="drone-speed">
@@ -163,25 +163,96 @@
 
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">
-                            Create
+                            Створити
                         </button>
                     </div>
 
                     <div class="form-group">
                         <button type="button" id="back-from-create-work-plan-btn" class="btn btn-secondary">
-                            Back
+                            Назад
                         </button>
                     </div>
                 </form>
 
                 <form id="update-work-plan-form" style="display: none">
+                    <div class="form-group">
+                        <label for="work-plan-name-update-work-plan-old" class="form-label">Назва плану (стара):</label>
+                        <input type="text" class="form-control" id="work-plan-name-update-work-plan-old" name="work-plan-name" readonly />
+                    </div>
 
+                    <div class="form-group">
+                        <label for="work-plan-name-update-work-plan" class="form-label">Нова назва плану:</label>
+                        <input type="text" class="form-control" id="work-plan-name-update-work-plan" name="new-work-plan-name" />
+                    </div>
 
+                    <div class="form-group">
+                        <label for="area-name-update-work-plan" class="form-label">Назва робочої області:</label>
+                        <input type="text" class="form-control" id="area-name-update-work-plan" name="area-name" readonly />
+                        <button id="select-area-update-work-plan-btn" type="button" class="btn btn-primary">Обрати область</button>
+                    </div>
 
-                    <button id="build-trajectory-btn" type="button" class="btn btn-primary">Build trajectory</button>
-                    <hr />
+                    <div class="form-group">
+                        <label for="point-name-update-work-plan" class="form-label">Назва точки завантаження:</label>
+                        <input type="text" class="form-control" id="point-name-update-work-plan" name="point-name" readonly />
+                        <button id="select-point-update-work-plan-btn" type="button" class="btn btn-primary">Обрати точку</button>
+                    </div>
 
-                    <button type="submit" id="submit-button-work-plan" class="btn btn-success">Export work plan</button>
+                    <div class="form-group">
+                        <label for="select-drone-update-work-plan">
+                            Дрон:
+                        </label>
+                        <select class="form-select" id="select-drone-update-work-plan" name="drone-name">
+                            <option value="None" hidden>[Обрати]</option>
+                        </select>
+                    </div>
+
+                    <div id="spraying-swath-width-update-work-plan-group" class="form-group" style="display: none;">
+                        <label for="spraying-swath-width-update-work-plan" class="form-label">Ширина смуги обприскування [м]:</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="range" class="form-range" min="0" max="1" step="0.5" value="0" id="spraying-swath-width-update-work-plan" name="spraying-swath-width">
+                            </div>
+                            <div class="col-6">
+                                <span id="spraying-swath-width-update-work-plan-value-span"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="flow-rate-update-work-plan-group" class="form-group" style="display: none;">
+                        <label for="flow-rate-update-work-plan" class="form-label">Об'ємна витрата [л/хв]:</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="range" class="form-range" min="0" max="1" step="0.5" value="0" id="flow-rate-update-work-plan" name="flow-rate">
+                            </div>
+                            <div class="col-6">
+                                <span id="flow-rate-update-work-plan-value-span"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="drone-speed-update-work-plan-group" class="form-group" style="display: none;">
+                        <label for="drone-speed-update-work-plan" class="form-label">Швидкість дрона [м/с]:</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="range" class="form-range" min="0" max="1" step="0.1" value="0" id="drone-speed-update-work-plan" name="drone-speed">
+                            </div>
+                            <div class="col-6">
+                                <span id="drone-speed-update-work-plan-value-span"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            Оновити
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="button" id="back-from-update-work-plan-btn" class="btn btn-secondary">
+                            Назад
+                        </button>
+                    </div>
                 </form>
 
 
@@ -191,8 +262,5 @@
 
 
     </div>
-</div>
-
-<div class="row">
 </div>
 

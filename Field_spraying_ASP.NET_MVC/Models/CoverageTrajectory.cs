@@ -6,16 +6,16 @@ namespace Field_spraying_ASP.NET_MVC.Models
     public class CoverageTrajectory
     {
         [DynamoDBHashKey]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [DynamoDBProperty]
-        public string AreaName { get; set; }
+        public string? AreaName { get; set; }
 
         [DynamoDBProperty]
-        public string PointName { get; set; }
+        public string? PointName { get; set; }
 
         [DynamoDBProperty]
-        public double[][] Coords { get; set; }
+        public double[][]? Coords { get; set; }
 
         public CoverageTrajectory() { }
     }
