@@ -6,10 +6,10 @@ namespace Field_spraying_ASP.NET_MVC.Models
     public class Area
     {
         [DynamoDBHashKey]
-        public string? Name { get; set; }
+        public string Name { get; set; }
 
         [DynamoDBProperty]
-        public double[][]? Coords { get; set; }
+        public double[][] Coords { get; set; }
 
         public Area() { }
     }

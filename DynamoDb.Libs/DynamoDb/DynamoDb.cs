@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Text;
@@ -35,7 +36,7 @@ namespace DynamoDb.Libs.DynamoDb
                 CreateTempTable("dplm_DroneType", "Name");
                 CreateTempTable("dplm_Drone", "Name");
                 CreateTempTable("dplm_WorkPlan", "Name");
-                CreateTempTable("dplm_CoverageTrajectory", "AreaName", "PointName");
+                CreateTempTable("dplm_CoverageTrajectory", "Name");
             }
             catch (Exception ex)
             {
@@ -69,6 +70,7 @@ namespace DynamoDb.Libs.DynamoDb
             try
             {
                 return await _dynamoDBContext.LoadAsync<T>(elemName);
+
             }
             catch (Exception ex)
             {
@@ -88,7 +90,7 @@ namespace DynamoDb.Libs.DynamoDb
             }
             catch (Exception ex)
             {
-                // LOG HERE
+                Debug.WriteLine(ex);
                 return null;
             }
         }
@@ -218,6 +220,54 @@ namespace DynamoDb.Libs.DynamoDb
                         return true;
                     }
                     else 
+                    {
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // LOG HERE
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Updates existing object specified by <paramref name="elemName"/> with parameters from new <paramref name="updatedObj"/>.
+        /// </summary>
+        public async Task<bool> UpdateObject<T>(string hashKey, string sortKey, T updatedObj) where T : class
+        {
+            var retrievedObj = await this.GetObject<T>(hashKey, sortKey);
+
+            if (retrievedObj != null)
+            {
+                Type retrievedObjType = retrievedObj.GetType();
+                PropertyInfo[] retrievedObjProps = retrievedObjType.GetProperties();
+
+                Type updatedObjType = updatedObj.GetType();
+                PropertyInfo[] updatedObjProps = updatedObjType.GetProperties();
+
+                for (int i = 0; i < updatedObjProps.Length; i++)
+                {
+                    if (updatedObjProps[i].GetValue(updatedObj) == null)
+                    {
+                        updatedObjProps[i].SetValue(updatedObj, retrievedObjProps[i].GetValue(retrievedObj));
+                    }
+                }
+
+                try
+                {
+                    bool deleteSuccess = await DeleteObject<T>(hashKey, sortKey);
+                    if (deleteSuccess)
+                    {
+                        await _dynamoDBContext.SaveAsync(updatedObj);
+                        return true;
+                    }
+                    else
                     {
                         return false;
                     }

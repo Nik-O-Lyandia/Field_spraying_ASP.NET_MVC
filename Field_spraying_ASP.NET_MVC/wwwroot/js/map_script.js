@@ -60,6 +60,21 @@ const styleFunction = function (feature) {
         });
     }
 
+    if (geometry instanceof Point && feature.get('droneId') != null) {
+
+        styles.push(
+            new Style({
+                image: new Icon({
+                    src: '/data/drone_point.png',
+                    anchor: [0.5, 0.5],
+                    width: 16,
+                    height: 16,
+                    rotateWithView: true,
+                }),
+            })
+        );
+    }
+
     return styles;
 };
 
@@ -70,6 +85,7 @@ const styleFunction = function (feature) {
 let workPlans = [];
 let drones = [];
 let droneTypes = [];
+let workPlanMonitors = []
 
 const source = new VectorSource();
 const vector = new VectorLayer({
@@ -89,8 +105,8 @@ const map = new Map({
         vector,
     ],
     view: new View({
-        center: fromLonLat([33.784976, 51.915775]),
-        zoom: 16,
+        center: fromLonLat([33.788584, 51.911590]), 
+        zoom: 18,
     }),
 });
 
@@ -294,6 +310,128 @@ function loadDroneType(droneType) {
         });
     });
 }
+
+function startWorkPlan(workPlanName) {
+
+    var obj = {};
+    obj['work-plan-name'] = workPlanName;
+    let data = JSON.stringify(obj);
+
+    $.ajax({
+        type: "POST",
+        url: "/map/start-work-plan",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        data: data,
+        dataType: "json",
+        success: function (response) {
+            //console.log(coords);
+            alert("Work plan is running");
+            startWorkPlanMonitoring(workPlanName);
+        },
+        error: function (response) {
+            console.log(response);
+            alert("Start failed with response: " + response);
+        }
+    });
+}
+
+function startWorkPlanMonitoring(workPlanName) {
+    var intervalIndex = setInterval(function () {
+        $.get({
+            url: "/map/get-work-plan-status/" + workPlanName,
+            success: function (data) {
+                const droneCoords = data;
+
+                const features = source.getFeatures();
+
+                if (data == false) {
+                    stopWorkPlan(workPlanName);
+                    for (let j = 0; j < features.length; j++) {
+                        if (intervalIndex == features[j].get('droneId')) {
+                            source.removeFeature(features[j]);
+                        }
+                    }
+                    console.log(workPlanMonitors);
+                    console.log(intervalIndex);
+                    workPlanMonitors.splice(workPlanMonitors.findIndex(wp => wp == intervalIndex), 1);
+                    clearInterval(intervalIndex);
+
+                } else {
+
+                    let feature = null;
+
+                    feature = new Feature({
+                        geometry: new Point(droneCoords),
+                        droneId: intervalIndex,
+                    });
+
+                    let addFeaturePermission = true;
+                    for (let j = 0; j < features.length; j++) {
+                        if (feature.get('droneId') == features[j].get('droneId')) {
+                            addFeaturePermission = false;
+                            features[j].getGeometry().setCoordinates(droneCoords);
+                        }
+                    }
+                    if (addFeaturePermission) {
+                        source.addFeature(feature);
+                    }
+                }
+            },
+            error: function (response) {
+                console.log(response);
+                //alert("Drones import failed");
+            }
+        });
+    }, 350);
+
+    workPlanMonitors.push(intervalIndex);
+}
+
+function stopWorkPlan(workPlanName) {
+    var obj = {};
+    obj['work-plan-name'] = workPlanName;
+    let data = JSON.stringify(obj);
+    return new Promise(function (resolve, reject) {
+        $.ajax({
+            type: "POST",
+            url: "/map/stop-work-plan",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            data: data,
+            dataType: "json",
+            success: function (response) {
+                //console.log(coords);
+                alert(response);
+                resolve(response);
+            },
+            error: function (response) {
+                console.log(response);
+                alert("Stop failed with response: " + response);
+                reject(response);
+            }
+        });
+    });
+}
+
+// ----------- TEST AJAX REQUEST -----------
+//$.get({
+//    url: "/map/get-test",
+//    success: function (data) {
+//        console.log(data);
+//        if (data == false) {
+//            console.log("Data is false");
+//        }
+//    },
+//    error: function (response) {
+//        console.log(response);
+//        //alert("Drones import failed");
+//    }
+//});
 
 //********************************************
 //        HANDLE FUNCTIONS SECTION
@@ -650,6 +788,44 @@ $(document).ready(function () {
         });
     });
 
+    $("#select-work-plan").on("change", function (event) {
+        var selectedWorkPlan = workPlans.find((wp) => wp.name == event.target.value);
+
+        const features = source.getFeatures();
+        let addTrajectoryFeatureAllowed = true;
+
+        for (let j = 0; j < features.length; j++) {
+            if (selectedWorkPlan.trajectoryName == features[j].get('trajectory_name')) {
+                addTrajectoryFeatureAllowed = false
+            }
+            if (features[j].get('trajectory_name') != null) {
+                source.removeFeature(features[j]);
+                //features.splice(j, 1);
+            }
+        }
+        $.get({
+            url: "/map/get-work-plan-trajectory/" + selectedWorkPlan.name,
+            success: function (response) {
+                if (addTrajectoryFeatureAllowed) {
+                    const feature = new Feature({
+                        geometry: new LineString(response.coords),
+                        trajectory_name: response.name,
+                        trajectory_area_name: response.areaName,
+                        trajectory_point_name: response.pointName,
+                    });
+                    source.addFeature(feature);
+                    featuresAddedThisSession.push(feature);
+                } else {
+                    console.log("Such trajectory is already added");
+                }
+            },
+            error: function (response) {
+                console.log(response);
+                //alert("Drones import failed");
+            }
+        });
+    });
+
     // ----- DELETE WORK PLAN -----
     $("#delete-work-plan-form").submit(function (event) {
         deleteObj("work-plan");
@@ -810,6 +986,7 @@ $(document).ready(function () {
                     if (addTrajectoryFeatureAllowed) {
                         const feature = new Feature({
                             geometry: new LineString(response.coords),
+                            trajectory_name: response.name,
                             trajectory_area_name: response.areaName,
                             trajectory_point_name: response.pointName,
                         });
@@ -828,12 +1005,18 @@ $(document).ready(function () {
             })
                 .done(function (data) {
                     turnOverlayOff();
-                });;
+                });
         } else {
             alert("Some fields aren't filled. Please, fill all the requsted fields.");
         }
 
         event.preventDefault();
+    });
+
+    // ----- START WORK PLAN -----
+    $("#start-work-plan-btn").click(function (event) {
+        let workPlanName = document.getElementById("select-work-plan").value;
+        startWorkPlan(workPlanName);
     });
 
     // ----- UPDATE WORK PLAN -----

@@ -6,6 +6,7 @@ using Amazon.DynamoDBv2.Model;
 using Amazon.Runtime;
 using DynamoDb.Libs.DynamoDb;
 using Microsoft.AspNetCore.Identity;
+using Field_spraying_ASP.NET_MVC.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,7 @@ builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
 
 builder.Services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
 builder.Services.AddSingleton<IDynamoDb, DynamoDb.Libs.DynamoDb.DynamoDb>();
+builder.Services.AddSingleton<IDroneControlService, DroneControlService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -5,7 +5,7 @@ namespace Field_spraying_ASP.NET_MVC.Models
 {
     public class CmdRun
     {
-        public string Run(string cmd, string args)
+        public string RunPython(string cmd, string args)
         {
             ProcessStartInfo start = new ProcessStartInfo();
             start.FileName = "python";

@@ -9,6 +9,8 @@ using System.Net;
 using Amazon.DynamoDBv2;
 using DynamoDb.Libs.DynamoDb;
 using System.Xml.Linq;
+using Field_spraying_ASP.NET_MVC.Services;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Field_spraying_ASP.NET_MVC.Controllers
 {
@@ -18,11 +20,13 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
     {
         private readonly IDynamoDb _dynamoDb;
         private readonly IWebHostEnvironment _env;
+        private readonly IDroneControlService _droneControlService;
 
-        public MapController(IDynamoDb dynamoDb, IWebHostEnvironment env)
+        public MapController(IDynamoDb dynamoDb, IWebHostEnvironment env, IDroneControlService droneControlService)
         {
             _dynamoDb = dynamoDb;
             _env = env;
+            _droneControlService = droneControlService;
         }
 
         [HttpGet]
@@ -191,32 +195,19 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             string contentRootPath = _env.ContentRootPath;
             string cppFilePath = contentRootPath + @"\python_algorithms\main.py";
-            double[][] routeArray;
+            double[][] routeArray = new double[0][];
 
             try
             {
-                WorkPlan workPlan = new WorkPlan(
-                name: workPlanName,
-                areaName: areaName,
-                pointName: pointName,
-                droneName: droneName,
-                spraySwathWidth: sprayingSwathWidth,
-                flowRate: flowRate,
-                droneSpeed: droneSpeed);
-
-                bool workPlanPutSuccess = await _dynamoDb.PutObject<WorkPlan>(workPlan);
-
-                if (!workPlanPutSuccess)
-                {
-                    return BadRequest("Work Plan with such name already exists");
-                }
+                CoverageTrajectory trajectory = new CoverageTrajectory() { Name = areaName + "-" + pointName, AreaName = areaName, PointName = pointName, Coords = routeArray };
 
                 CoverageTrajectory? trajectoryFromDb = await _dynamoDb.GetObject<CoverageTrajectory>(areaName, pointName);
 
                 if (trajectoryFromDb == null)
                 {
                     CmdRun cmdRun = new CmdRun();
-                    var route = cmdRun.Run(cppFilePath, "-a " + areaName + " -p " + pointName + " -r " + (sprayingSwathWidth / 2.0).ToString());
+                    string arguments = "-a " + areaName + " -p " + pointName + " -r " + (sprayingSwathWidth / 2.0).ToString().Replace(",", ".");
+                    var route = cmdRun.RunPython(cppFilePath, arguments);
 
                     //Debug.WriteLine(route);
                     var routeCoords = route.Split(",");
@@ -250,11 +241,28 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
                     if (!routeArray.Any()) return BadRequest("No route was added to coverage trajectory");
 
-                    CoverageTrajectory trajectory = new CoverageTrajectory() { AreaName = areaName, PointName = pointName, Coords = routeArray };
+                    trajectory.Coords = routeArray;
+
                     bool trajectoryPutSuccess = await _dynamoDb.PutObject<CoverageTrajectory>(trajectory);
 
                     if (trajectoryPutSuccess)
                     {
+                        WorkPlan workPlan = new WorkPlan(
+                        name: workPlanName,
+                        areaName: areaName,
+                        trajectoryName: trajectory.Name,
+                        pointName: pointName,
+                        droneName: droneName,
+                        spraySwathWidth: sprayingSwathWidth,
+                        flowRate: flowRate,
+                        droneSpeed: droneSpeed);
+
+                        bool workPlanPutSuccess = await _dynamoDb.PutObject<WorkPlan>(workPlan);
+
+                        if (!workPlanPutSuccess)
+                        {
+                            return BadRequest("Work Plan with such name already exists");
+                        }
                         return Ok(trajectory);
                     }
                     else
@@ -272,15 +280,6 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-        [Route("start-work-plan")]
-        [HttpPost]
-        public async Task<IActionResult> StartWorkPlan([FromBody] JsonElement formData)
-        {
-            var workPlanName = formData.GetProperty("work-plan-name").ToString();
-
-            return Ok();
         }
 
         [Route("delete-work-plan")]
@@ -303,6 +302,95 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                 return BadRequest("No work plan with such name to delete");
             }
 
+        }
+
+        [Route("start-work-plan")]
+        [HttpPost]
+        public async Task<IActionResult> StartWorkPlan([FromBody] JsonElement formData)
+        {
+            var workPlanName = formData.GetProperty("work-plan-name").ToString();
+
+            var workPlan = await _dynamoDb.GetObject<WorkPlan>(workPlanName);
+
+            if (workPlan == null) return BadRequest("No such work plan in DB");
+
+            try
+            {
+                _droneControlService.InitWorkPlanSimulation(workPlan);
+                return Ok("Work plan has been started.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("get-work-plan-status/{workPlanName}")]
+        [HttpGet]
+        public IActionResult GetWorkPlanStatus(string workPlanName)
+        {
+            try
+            {
+                var dronePosition = _droneControlService.GetCurrentDronePosition(workPlanName);
+                if (dronePosition[0] == -1 && dronePosition[1] == -1)
+                {
+                    return Ok(false);
+                }
+                return Ok(dronePosition);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("stop-work-plan")]
+        [HttpPost]
+        public async Task<IActionResult> StopWorkPlan([FromBody] JsonElement formData)
+        {
+            var workPlanName = formData.GetProperty("work-plan-name").ToString();
+
+            //var workPlan = await _dynamoDb.GetObject<WorkPlan>(workPlanName);
+
+            try
+            {
+                 _droneControlService.StopWorkPlanSimulation(workPlanName);
+                return Ok("Work plan was stopped");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("get-work-plan-trajectory/{workPlanName}")]
+        [HttpGet]
+        public async Task<IActionResult> GetWorkPlanTrajectory(string workPlanName)
+        {
+            try
+            {
+                var workPlan = await _dynamoDb.GetObject<WorkPlan>(workPlanName);
+                var trajectory = await _dynamoDb.GetObject<CoverageTrajectory>(workPlan.TrajectoryName);
+                if (trajectory != null)
+                {
+                    return Ok(trajectory);
+                } 
+                else
+                {
+                    return BadRequest("No trajectory with such name in DB");
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Route("get-test")]
+        [HttpGet]
+        public IActionResult GetTest()
+        {
+            return Ok(false);
         }
     }
 }
