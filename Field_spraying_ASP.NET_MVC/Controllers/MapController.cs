@@ -11,11 +11,13 @@ using DynamoDb.Libs.DynamoDb;
 using System.Xml.Linq;
 using Field_spraying_ASP.NET_MVC.Services;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Field_spraying_ASP.NET_MVC.Controllers
 {
     [Route("/map")]
     [ApiController]
+    [Authorize]
     public class MapController : Controller
     {
         private readonly IDynamoDb _dynamoDb;
@@ -29,6 +31,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
             _droneControlService = droneControlService;
         }
 
+        //[Route("/")]
         [HttpGet]
         public IActionResult MapView()
         {
@@ -75,7 +78,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             if (area != null)
             {
-                bool success = await _dynamoDb.PutObject<Area>(area);
+                bool success = await _dynamoDb.PutObject<Area>(area, "Name");
 
                 if (success)
                 {
@@ -89,7 +92,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
             if (point != null)
             {
-                bool success = await _dynamoDb.PutObject<Point>(point);
+                bool success = await _dynamoDb.PutObject<Point>(point, "Name");
 
                 if (success)
                 {
@@ -243,7 +246,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
                     trajectory.Coords = routeArray;
 
-                    bool trajectoryPutSuccess = await _dynamoDb.PutObject<CoverageTrajectory>(trajectory);
+                    bool trajectoryPutSuccess = await _dynamoDb.PutObject<CoverageTrajectory>(trajectory, "Name");
 
                     if (trajectoryPutSuccess)
                     {
@@ -257,7 +260,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                             flowRate: flowRate,
                             droneSpeed: droneSpeed);
 
-                        bool workPlanPutSuccess = await _dynamoDb.PutObject<WorkPlan>(workPlan);
+                        bool workPlanPutSuccess = await _dynamoDb.PutObject<WorkPlan>(workPlan, "Name");
 
                         if (!workPlanPutSuccess)
                         {
@@ -371,7 +374,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 
                     trajectory.Coords = routeArray;
 
-                    bool trajectoryPutSuccess = await _dynamoDb.PutObject<CoverageTrajectory>(trajectory);
+                    bool trajectoryPutSuccess = await _dynamoDb.PutObject<CoverageTrajectory>(trajectory, "Name");
 
                     if (trajectoryPutSuccess)
                     {

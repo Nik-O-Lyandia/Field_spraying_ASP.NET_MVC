@@ -37,6 +37,7 @@ namespace DynamoDb.Libs.DynamoDb
                 CreateTempTable("dplm_Drone", "Name");
                 CreateTempTable("dplm_WorkPlan", "Name");
                 CreateTempTable("dplm_CoverageTrajectory", "Name");
+                CreateTempTable("dplm_User", "Username");
             }
             catch (Exception ex)
             {
@@ -98,10 +99,10 @@ namespace DynamoDb.Libs.DynamoDb
         /// <summary>
         /// Puts new object <paramref name="obj"/> into DB.
         /// </summary>
-        public async Task<bool> PutObject<T>(T obj) where T : class
+        public async Task<bool> PutObject<T>(T obj, string objPKName) where T : class
         {
             Type objType = obj.GetType();
-            PropertyInfo? objNameProp = objType.GetProperty("Name");
+            PropertyInfo? objNameProp = objType.GetProperty(objPKName);
             Task<T?> loadedObject;
             if (objNameProp != null)
             {

@@ -7,6 +7,10 @@ using Amazon.Runtime;
 using DynamoDb.Libs.DynamoDb;
 using Microsoft.AspNetCore.Identity;
 using Field_spraying_ASP.NET_MVC.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+
+Environment.SetEnvironmentVariable("PasswordHashPepper", "fa):AiXn)#");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,11 +30,19 @@ builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
 builder.Services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
 builder.Services.AddSingleton<IDynamoDb, DynamoDb.Libs.DynamoDb.DynamoDb>();
 builder.Services.AddSingleton<IDroneControlService, DroneControlService>();
+builder.Services.AddSingleton<IPasswordHasherService, PasswordHasherService>();
+
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+        options.SlidingExpiration = true;
+        options.AccessDeniedPath = "/";
+        options.LoginPath = "/";
+    });
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-//builder.Services.AddControllers();
-//builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
@@ -59,16 +71,22 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-//app.UseEndpoints(endpoints =>
-//{
-//    endpoints.MapRazorPages();
-//    endpoints.MapControllers();
-//});
+var cookiePolicyOptions = new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.Strict,
+};
+app.UseCookiePolicy(cookiePolicyOptions);
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Login}/{action=Login}/{id?}");
 
 app.Run();

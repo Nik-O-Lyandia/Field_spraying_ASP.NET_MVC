@@ -18,7 +18,7 @@ function addObj(objName) {
 
     $.each(formData, function (i, field) {
         if (field.value == "" || field.value == null) {
-            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            throwErrorAlert("Деякі поля не заповнені.");
             postAllowed = false;
             return false;
         }
@@ -39,11 +39,11 @@ function addObj(objName) {
             dataType: "json",
             success: function (response) {
                 console.log(response);
-                alert(response);
+                throwSuccessAlert("Додавання вдалося.");
             },
             error: function (response) {
                 console.log(response);
-                alert("Add failed with response: " + response);
+                throwErrorAlert("Додавання не вдалося з повідомленням: " + response);
             }
         });
     }
@@ -58,7 +58,7 @@ function deleteObj(objName) {
 
     $.each(formData, function (i, field) {
         if (field.value == "" || field.value == null) {
-            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            throwErrorAlert("Деякі поля не заповнені.");
             postAllowed = false;
             return false;
         }
@@ -79,11 +79,11 @@ function deleteObj(objName) {
             dataType: "json",
             success: function (response) {
                 console.log(response);
-                alert(response);
+                throwSuccessAlert("Видалення вдалося.");
             },
             error: function (response) {
                 console.log(response);
-                alert("Delete failed with response: " + response);
+                throwErrorAlert("Видалення не вдалося з повідомленням: " + response);
             }
         });
     }
@@ -111,11 +111,11 @@ function updateObj(objName) {
         dataType: "json",
         success: function (response) {
             console.log(response);
-            alert(response);
+            throwSuccessAlert("Редагування вдалося.");
         },
         error: function (response) {
             console.log(response);
-            alert("Update failed with response: " + response);
+            throwErrorAlert("Редагування не вдалося з повідомленням: " + response);
         }
     });
 }
@@ -135,7 +135,6 @@ function loadDroneTypes() {
             error: function (response) {
                 console.log(response);
                 reject(response);
-                //alert("Drone type import failed");
             }
         });
     });
@@ -156,7 +155,6 @@ function loadDrones() {
             error: function (response) {
                 console.log(response);
                 reject(response);
-                //alert("Drones import failed");
             }
         });
     });
@@ -178,7 +176,7 @@ function createDroneTypeTable(typeName) {
 
     let col1 = document.createElement("th");
     col1.setAttribute("scope", 'row');
-    col1.innerText = 'Drone Type:';
+    col1.innerText = 'Тип дрона:';
     let col2 = document.createElement("th");
     col2.innerText = type.name;
 
@@ -191,7 +189,7 @@ function createDroneTypeTable(typeName) {
 
     col1 = document.createElement("th");
     col1.setAttribute("scope", 'row');
-    col1.innerText = 'Tank Volume [L]:';
+    col1.innerText = "Об'єм бака [л]:";
     col2 = document.createElement("th");
     col2.innerText = type.tankVolume;
 
@@ -204,7 +202,7 @@ function createDroneTypeTable(typeName) {
 
     col1 = document.createElement("th");
     col1.setAttribute("scope", 'row');
-    col1.innerText = 'Spray Swath Width [M]:';
+    col1.innerText = 'Ширина смуги обприскування [м]:';
     col2 = document.createElement("th");
     col2.innerText = type.spraySwathWidthMin.toString() + ' – ' + type.spraySwathWidthMax.toString();
 
@@ -217,7 +215,7 @@ function createDroneTypeTable(typeName) {
 
     col1 = document.createElement("th");
     col1.setAttribute("scope", 'row');
-    col1.innerText = 'Flow Rate [LPM]:';
+    col1.innerText = "Об'ємна витрата [л/хв]:";
     col2 = document.createElement("th");
     col2.innerText = type.flowRateMin.toString() + ' – ' + type.flowRateMax.toString();
 
@@ -230,7 +228,7 @@ function createDroneTypeTable(typeName) {
 
     col1 = document.createElement("th");
     col1.setAttribute("scope", 'row');
-    col1.innerText = 'Max Speed [MPS]:';
+    col1.innerText = 'Максимальна швидкість [м/с]:';
     col2 = document.createElement("th");
     col2.innerText = type.maxSpeed.toString();
 
@@ -241,7 +239,7 @@ function createDroneTypeTable(typeName) {
     table.appendChild(tbody);
 
     let infoBoardHeaderElem = document.createElement("h2");
-    infoBoardHeaderElem.innerText = 'DRONE TYPE INFO';
+    infoBoardHeaderElem.innerText = 'ІНФОРМАЦІЯ ПРО ТИП ДРОНА';
     infoBoardHeaderElem.setAttribute('style', 'text-align: center;');
 
     let infoBoard = document.getElementById("info-board");
@@ -342,7 +340,7 @@ $(document).ready(function () {
                 }
             }
         } else {
-            alert("No drone type was chosen");
+            throwErrorAlert("Тип дрона не вибрано.");
         }
 
         event.preventDefault();
@@ -464,7 +462,7 @@ $(document).ready(function () {
                 }
             }
         } else {
-            alert("No drone was chosen");
+            throwErrorAlert("Дрон не вибрано.");
         }
 
         event.preventDefault();

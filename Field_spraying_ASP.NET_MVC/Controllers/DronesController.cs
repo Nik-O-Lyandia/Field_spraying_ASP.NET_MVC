@@ -1,6 +1,7 @@
 ﻿using Amazon.DynamoDBv2.DataModel;
 using DynamoDb.Libs.DynamoDb;
 using Field_spraying_ASP.NET_MVC.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 using System.Globalization;
@@ -11,6 +12,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
 {
     [Route("/drones")]
     [ApiController]
+    [Authorize]
     public class DronesController : Controller
     {
         private readonly IWebHostEnvironment _env;
@@ -77,7 +79,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                     flowRateMax: flowRateMax,
                     maxSpeed: maxSpeed);
 
-                bool success = await _dynamoDb.PutObject<DroneType>(droneType);
+                bool success = await _dynamoDb.PutObject<DroneType>(droneType, "Name");
 
                 if (success)
                 {
@@ -201,7 +203,7 @@ namespace Field_spraying_ASP.NET_MVC.Controllers
                     name: name,
                     droneType: typeName);
 
-                bool success = await _dynamoDb.PutObject<Drone>(drone);
+                bool success = await _dynamoDb.PutObject<Drone>(drone, "Name");
 
                 if (success)
                 {

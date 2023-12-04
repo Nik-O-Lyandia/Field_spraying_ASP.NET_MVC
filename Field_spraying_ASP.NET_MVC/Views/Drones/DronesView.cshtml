@@ -12,10 +12,10 @@
     <div class="col-md-4">
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link" id="nav-manage-drone-types-tab" data-bs-toggle="tab" data-bs-target="#nav-manage-drone-types" type="button" role="tab" aria-controls="nav-manage-drone-types" aria-selected="true">Manage drone types</button>
-                <button class="nav-link" id="nav-add-drone-type-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone-type" type="button" role="tab" aria-controls="nav-add-drone-type" aria-selected="false">Add new drone type</button>
-                <button class="nav-link" id="nav-manage-drones-tab" data-bs-toggle="tab" data-bs-target="#nav-manage-drones" type="button" role="tab" aria-controls="nav-manage-drones" aria-selected="false">Manage drones</button>
-                <button class="nav-link" id="nav-add-drone-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone" type="button" role="tab" aria-controls="nav-add-drone" aria-selected="false">Add drone</button>
+                <button class="nav-link" id="nav-manage-drone-types-tab" data-bs-toggle="tab" data-bs-target="#nav-manage-drone-types" type="button" role="tab" aria-controls="nav-manage-drone-types" aria-selected="true">Керувати типами дронів</button>
+                <button class="nav-link" id="nav-add-drone-type-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone-type" type="button" role="tab" aria-controls="nav-add-drone-type" aria-selected="false">Додати тип дрона</button>
+                <button class="nav-link" id="nav-manage-drones-tab" data-bs-toggle="tab" data-bs-target="#nav-manage-drones" type="button" role="tab" aria-controls="nav-manage-drones" aria-selected="false">Керувати дронами</button>
+                <button class="nav-link" id="nav-add-drone-tab" data-bs-toggle="tab" data-bs-target="#nav-add-drone" type="button" role="tab" aria-controls="nav-add-drone" aria-selected="false">Додати дрон</button>
             </div>
         </nav>
 
@@ -30,7 +30,7 @@
 
                             <div class="form-group">
                                 <label for="manage-drone-type">
-                                    Drone type
+                                    Тип дрона:
                                 </label>
                                 <select class="form-select" id="manage-drone-type" name="drone-type-name">
                                     <option value="None" hidden>None</option>
@@ -39,40 +39,40 @@
 
                             <div class="form-group">
                                 <button type="button" id="update-drone-type-btn" class="btn btn-primary">
-                                    Update
+                                    Редагувати
                                 </button>
                             </div>
 
                             <button type="submit" class="btn btn-danger">
-                                Delete
+                                Видалити
                             </button>
                         </form>
 
                         <form id="update-drone-type-form" role="form" style="display: none">
                             <div class="form-group">
                                 <label for="update-drone-type-name-old">
-                                    Drone type name (old)
+                                    Назва типу дрона (стара):
                                 </label>
                                 <input type="text" class="form-control" id="update-drone-type-name-old" name="drone-type-name" readonly />
                             </div>
 
                             <div class="form-group">
                                 <label for="update-drone-type-name">
-                                    Drone type name (new)
+                                    Назва типу дрона (нова):
                                 </label>
                                 <input type="text" class="form-control" id="update-drone-type-name" name="new-drone-type-name" />
                             </div>
 
                             <div class="form-group">
                                 <label for="update-drone-tank-volume">
-                                    Drone tank volume [L]
+                                    Об'єм бака дрона [л]:
                                 </label>
                                 <input type="number" step="any" class="form-control" id="update-drone-tank-volume" name="new-drone-tank-volume" />
                             </div>
 
                             <div class="form-group">
                                 <label for="update-drone-spray-swath-width-min">
-                                    Drone spray swath width (min/max) [m]
+                                    Ширина смуги обприскування (мін/макс) [м]:
                                 </label>
                                 <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-spray-swath-width-min" name="new-drone-spray-swath-width-min" />
                                 <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-spray-swath-width-max" name="new-drone-spray-swath-width-max" />
@@ -80,7 +80,7 @@
 
                             <div class="form-group">
                                 <label for="update-drone-flow-rate-min">
-                                    Flow rate (min/max) [LPM]
+                                    Об'ємна витрата (мін/макс) [л/хв]:
                                 </label>
                                 <input type="number" step="any" class="form-control" placeholder="Min" id="update-drone-flow-rate-min" name="new-drone-flow-rate-min" />
                                 <input type="number" step="any" class="form-control" placeholder="Max" id="update-drone-flow-rate-max" name="new-drone-flow-rate-max" />
@@ -88,20 +88,20 @@
 
                             <div class="form-group">
                                 <label for="update-drone-speed-max">
-                                    Max drone speed [MPS]
+                                    Максимальна швидкість дрона [м/с]:
                                 </label>
                                 <input type="number" class="form-control" placeholder="Max" id="update-drone-speed-max" name="new-drone-speed-max" />
                             </div>
 
                             <div class="form-group">
                                 <button type="submit" class="btn btn-primary">
-                                    Update
+                                    Зберегти
                                 </button>
                             </div>
 
                             <div class="form-group">
                                 <button type="button" id="back-drone-type-btn" class="btn btn-secondary">
-                                    Back
+                                    Назад
                                 </button>
                             </div>
                         </form>
@@ -111,21 +111,21 @@
                         <form id="add-drone-type-form" role="form">
                             <div class="form-group">
                                 <label for="drone-name">
-                                    Drone type name
+                                    Назва типу дрона:
                                 </label>
                                 <input type="text" class="form-control" id="drone-type-name" name="drone-type-name" />
                             </div>
 
                             <div class="form-group">
                                 <label for="drone-tank-volume">
-                                    Drone tank volume [L]
+                                    Об'єм бака дрона [л]:
                                 </label>
                                 <input type="number" step="any" class="form-control" id="drone-tank-volume" name="drone-tank-volume" />
                             </div>
 
                             <div class="form-group">
                                 <label for="drone-spray-swath-width-min">
-                                    Drone spray swath width (min/max) [m]
+                                    Ширина смуги обприскування (мін/макс) [м]:
                                 </label>
                                 <input type="number" step="any" class="form-control" placeholder="Min" id="drone-spray-swath-width-min" name="drone-spray-swath-width-min" />
                                 <input type="number" step="any" class="form-control" placeholder="Max" id="drone-spray-swath-width-max" name="drone-spray-swath-width-max" />
@@ -133,7 +133,7 @@
 
                             <div class="form-group">
                                 <label for="drone-flow-rate-min">
-                                    Flow rate (min/max) [LPM]
+                                    Об'ємна витрата (мін/макс) [л/хв]:
                                 </label>
                                 <input type="number" step="any" class="form-control" placeholder="Min" id="drone-flow-rate-min" name="drone-flow-rate-min" />
                                 <input type="number" step="any" class="form-control" placeholder="Max" id="drone-flow-rate-max" name="drone-flow-rate-max" />
@@ -141,13 +141,13 @@
 
                             <div class="form-group">
                                 <label for="drone-speed-max">
-                                    Max drone speed [MPS]
+                                    Максимальна швидкість дрона [м/с]:
                                 </label>
                                 <input type="number" class="form-control" placeholder="Max" id="drone-speed-max" name="drone-speed-max" />
                             </div>
 
                             <button type="submit" class="btn btn-primary">
-                                Submit
+                                Додати
                             </button>
                         </form>
                     </div>
@@ -157,7 +157,7 @@
 
                             <div class="form-group">
                                 <label for="manage-drone-name">
-                                    Drone name
+                                    Назва дрона:
                                 </label>
                                 <select class="form-select" id="manage-drone-name" name="drone-name">
                                     <option value="None" hidden>None</option>
@@ -166,33 +166,33 @@
 
                             <div class="form-group">
                                 <button type="button" id="update-drone-btn" class="btn btn-primary">
-                                    Update
+                                    Редагувати
                                 </button>
                             </div>
 
                             <button type="submit" class="btn btn-danger">
-                                Delete
+                                Видалити
                             </button>
                         </form>
 
                         <form id="update-drone-form" role="form" style="display: none">
                             <div class="form-group">
                                 <label for="update-drone-name-old">
-                                    Drone name (old)
+                                    Назва дрона (стара):
                                 </label>
                                 <input type="text" class="form-control" id="update-drone-name-old" name="drone-name" readonly />
                             </div>
 
                             <div class="form-group">
                                 <label for="update-drone-name">
-                                    Drone name (new)
+                                    Назва дрона (нова):
                                 </label>
                                 <input type="text" class="form-control" id="update-drone-name" name="new-drone-name" />
                             </div>
 
                             <div class="form-group">
                                 <label for="update-drone-type-name">
-                                    Drone type
+                                    Тип дрона:
                                 </label>
                                 <select class="form-select" id="update-drone-type-name" name="new-drone-type-name">
                                     <option value="None" hidden>None</option>
@@ -201,13 +201,13 @@
 
                             <div class="form-group">
                                 <button type="submit" class="btn btn-primary">
-                                    Update
+                                    Зберегти
                                 </button>
                             </div>
 
                             <div class="form-group">
                                 <button type="button" id="back-drone-btn" class="btn btn-secondary">
-                                    Back
+                                    Назад
                                 </button>
                             </div>
                         </form>
@@ -217,14 +217,14 @@
                         <form id="add-drone-form" role="form">
                             <div class="form-group">
                                 <label for="drone-name">
-                                    Drone name
+                                    Назва дрона:
                                 </label>
                                 <input type="text" class="form-control" id="drone-name" name="drone-name" />
                             </div>
 
                             <div class="form-group">
                                 <label for="drone-type">
-                                    Drone type
+                                    Тип дрона:
                                 </label>
                                 <select class="form-select" id="drone-type" name="drone-type-name">
                                     <option value="None" hidden>None</option>
@@ -232,18 +232,9 @@
                             </div>
 
                             <button type="submit" class="btn btn-primary">
-                                Submit
+                                Додати
                             </button>
                         </form>
-                    </div>
-
-
-                    <div class="row">
-                        <div class="col-md-6">
-                        </div>
-                        <div class="col-md-6">
-                            INFO HERE
-                        </div>
                     </div>
 
                 </div>

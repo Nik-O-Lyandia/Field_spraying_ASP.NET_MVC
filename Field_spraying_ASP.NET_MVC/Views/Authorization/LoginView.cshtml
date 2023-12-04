@@ -1,0 +1,25 @@
+﻿@{
+    ViewData["Title"] = "Login";
+}
+
+<script src="~/js/login_script.js"></script>
+<link rel="stylesheet" href="~/css/login-registration_style.css" type="text/css" />
+
+<div class="container login-reg">
+    <h2 class="text-center mb-4">Авторизація</h2>
+
+    <form id="loginForm">
+        <div class="form-group mb-3">
+            <label for="username" class="form-label">Ім'я:</label>
+            <input type="text" id="username" name="username" class="form-control" required />
+        </div>
+        <div class="form-group mb-3">
+            <label for="password" class="form-label">Пароль:</label>
+            <input type="password" id="password" name="password" class="form-control" required />
+        </div>
+        <div>
+            <button type="button" onclick="logIn()" class="btn btn-primary">Увійти</button>
+            <button type="button" onclick="goToRegistration()" class="btn btn-secondary">Зареєструватися</button>
+        </div>
+    </form>
+</div>

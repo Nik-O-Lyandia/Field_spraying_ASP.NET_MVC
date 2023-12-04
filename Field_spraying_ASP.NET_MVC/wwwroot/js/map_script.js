@@ -13,7 +13,6 @@ import { none } from 'ol/centerconstraint';
 import { platformModifierKeyOnly } from 'ol/events/condition.js';
 import { getWidth } from 'ol/extent.js';
 
-
 const styleFunction = function (feature) {
 
     const geometry = feature.getGeometry();
@@ -105,7 +104,7 @@ const map = new Map({
         vector,
     ],
     view: new View({
-        center: fromLonLat([33.788584, 51.911590]), 
+        center: fromLonLat([33.788584, 51.911590]),
         zoom: 18,
     }),
 });
@@ -199,6 +198,7 @@ function removeDrawInteractions() {
 
 function removeSelectInteraction() {
     selectedFeatures = null;
+    map.removeInteraction(selectPointerMove);
     map.removeInteraction(management_select);
     map.removeInteraction(work_plan_select_polygon);
     map.removeInteraction(work_plan_select_point);
@@ -265,7 +265,6 @@ function loadWorkPlans() {
             error: function (response) {
                 console.log(response);
                 reject(response);
-                //alert("Drones import failed");
             }
         });
     });
@@ -288,7 +287,6 @@ function loadDrones() {
             error: function (response) {
                 console.log(response);
                 reject(response);
-                //alert("Drones import failed");
             }
         });
     });
@@ -305,7 +303,6 @@ function loadDroneType(droneType) {
             error: function (response) {
                 console.log(response);
                 reject(response);
-                //alert("Drones import failed");
             }
         });
     });
@@ -314,40 +311,45 @@ function loadDroneType(droneType) {
 function deleteObj(objName) {
     var formData = $("#delete-" + objName + "-form").serializeArray();
 
-    let dataObject = {};
+    if (formData["work-plan"] != "None") {
 
-    let postAllowed = true;
+        let dataObject = {};
 
-    $.each(formData, function (i, field) {
-        if (field.value == "" || field.value == null) {
-            alert("Some fields aren't filled. Please, fill all the requsted fields.");
-            postAllowed = false;
-            return false;
-        }
-        dataObject[field.name] = field.value;
-    });
+        let postAllowed = true;
 
-    let data = JSON.stringify(dataObject);
-
-    if (postAllowed) {
-        $.ajax({
-            type: "DELETE",
-            url: "/map/delete-" + objName,
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            data: data,
-            dataType: "json",
-            success: function (response) {
-                console.log(response);
-                alert(response);
-            },
-            error: function (response) {
-                console.log(response);
-                alert("Delete failed with response: " + response);
+        $.each(formData, function (i, field) {
+            if (field.value == "" || field.value == null) {
+                throwErrorAlert("Деякі поля не завповнені.");
+                postAllowed = false;
+                return false;
             }
+            dataObject[field.name] = field.value;
         });
+
+        let data = JSON.stringify(dataObject);
+
+        if (postAllowed) {
+            $.ajax({
+                type: "DELETE",
+                url: "/map/delete-" + objName,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: data,
+                dataType: "json",
+                success: function (response) {
+                    console.log(response);
+                    alert(response);
+                },
+                error: function (response) {
+                    console.log(response);
+                    throwErrorAlert("Видалення не вдалося з повідомленням: " + response);
+                }
+            });
+        }
+    } else {
+        throwErrorAlert("Робочий план не вибрано.");
     }
 }
 
@@ -377,7 +379,7 @@ function updateObj(objName) {
         },
         error: function (response) {
             console.log(response);
-            alert("Update failed with response: " + response);
+            throwErrorAlert("Редагування не вдалося з повідомленням: " + response);
         }
     });
 }
@@ -404,7 +406,7 @@ function startWorkPlan(workPlanName) {
         },
         error: function (response) {
             console.log(response);
-            alert("Start failed with response: " + response);
+            throwErrorAlert("Запуск не вдався з повідомленням: " + response);
         }
     });
 }
@@ -453,7 +455,6 @@ function startWorkPlanMonitoring(workPlanName) {
             },
             error: function (response) {
                 console.log(response);
-                //alert("Drones import failed");
             }
         });
     }, 250);
@@ -482,7 +483,7 @@ function stopWorkPlan(workPlanName) {
             },
             error: function (response) {
                 console.log(response);
-                alert("Stop failed with response: " + response);
+                throwErrorAlert("Зупинка не вдалася з повідомленням: " + response);
                 reject(response);
             }
         });
@@ -509,7 +510,6 @@ function stopWorkPlan(workPlanName) {
 //********************************************
 
 management_select.on("select", function (e) {
-    map.removeInteraction(selectPointerMove);
     selectedFeatures = e.target.getFeatures();
 
     //console.log(e.selected);
@@ -546,7 +546,7 @@ management_select.on("select", function (e) {
                         exportFormInnerElements[i].style.display = "none";
                     }
                 } else {
-                    alert("Selected features must not be the same type.");
+                    throwErrorAlert("Виділені фігури мають бути НЕ однакового типу.");
                     removeSelectInteraction();
                     break;
                 }
@@ -556,7 +556,7 @@ management_select.on("select", function (e) {
         exportFormElement.style.display = "none";
         deleteButton.style.display = "none";
         let featuresNum = exportSelectActivated ? "1" : "2";
-        alert("Select no more than " + featuresNum + " features.");
+        throwErrorAlert("Оберіть не більше ніж " + featuresNum + " фігур.");
         removeSelectInteraction();
     }
 
@@ -567,7 +567,6 @@ management_select.on("select", function (e) {
 });
 
 work_plan_select_polygon.on("select", function (e) {
-    map.removeInteraction(selectPointerMove);
     selectedFeatures = e.target.getFeatures();
 
     if (selectedFeatures.getLength() > 0) {
@@ -579,7 +578,7 @@ work_plan_select_polygon.on("select", function (e) {
         if (geoms[0] instanceof Polygon) {
             document.getElementById("area-name-create-work-plan").value = selectedFeatures.item(0).get("name");
         } else {
-            alert("Selected features must be Area.");
+            throwErrorAlert("Виділена фігура має бути Робочою Областю.");
         }
     }
 
@@ -591,7 +590,6 @@ work_plan_select_polygon.on("select", function (e) {
 });
 
 work_plan_select_point.on("select", function (e) {
-    map.removeInteraction(selectPointerMove);
     selectedFeatures = e.target.getFeatures();
 
     if (selectedFeatures.getLength() > 0) {
@@ -603,7 +601,7 @@ work_plan_select_point.on("select", function (e) {
         if (geoms[0] instanceof Point) {
             document.getElementById("point-name-create-work-plan").value = selectedFeatures.item(0).get("name");
         } else {
-            alert("Selected features must be Point.");
+            throwErrorAlert("Виділена фігура має бути Точкою Завантаження.");
         }
     }
 
@@ -631,6 +629,13 @@ const importInterval = setInterval(function () {
 //          HANDLE CHANGE EVENTS
 //********************************************
 $(document).ready(function () {
+
+    // -------- TOOLTIPS ANABLING --------
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
 
     $("#nav-draw-tab").on('hidden.bs.tab', function (event) {
         //event.target // newly activated tab
@@ -689,15 +694,6 @@ $(document).ready(function () {
     //          MANAGMENT SECTION
     //********************************************
 
-    // ----- IMPORT AREA ACTION -----
-    $("#import-btn").click(function () {
-
-        $.get("/Map/Import")
-            .done(function (data) {
-                importMap(data);
-            });
-    });
-
     // ----- AREA SELECTION -----
     $("#management-select-btn").click(function () {
         exportSelectActivated = true;
@@ -743,7 +739,7 @@ $(document).ready(function () {
                 }
 
             } else {
-                alert("Select only 1 polygon or 1 loading point or both of them at the same time.");
+                throwErrorAlert("Оберіть лише 1 область або лише 1 точку, або обидві фігури разом.");
             }
 
             //console.log(coords[0]);
@@ -773,11 +769,11 @@ $(document).ready(function () {
                 },
                 error: function (response) {
                     console.log(response);
-                    alert("Export failed");
+                    throwErrorAlert("Збереження не вдалося з повідомленням: " + response);
                 }
             });
         } else {
-            alert("Please select features to export.");
+            throwErrorAlert("Будь ласка, виберіть фігури для збереження.");
         }
         event.preventDefault();
     });
@@ -820,12 +816,12 @@ $(document).ready(function () {
                 },
                 error: function (response) {
                     console.log(response);
-                    alert("Feature is not in DB");
+                    throwErrorAlert("Такої фігури немає в базі. (" + response + ")");
                 },
             });
 
         } else {
-            alert("Please select features to export.");
+            throwErrorAlert("Будь ласка, оберіть фігуру для видалення.");
         }
 
     });
@@ -892,7 +888,6 @@ $(document).ready(function () {
             },
             error: function (response) {
                 console.log(response);
-                //alert("Drones import failed");
             }
         });
     });
@@ -900,7 +895,12 @@ $(document).ready(function () {
     // ----- START WORK PLAN -----
     $("#start-work-plan-btn").click(function (event) {
         let workPlanName = document.getElementById("select-work-plan").value;
-        startWorkPlan(workPlanName);
+
+        if (workPlanName != "None") {
+            startWorkPlan(workPlanName);
+        } else {
+            throwErrorAlert("Робочий план не вибрано.");
+        }
     });
 
     // ----- DELETE WORK PLAN -----
@@ -1073,21 +1073,21 @@ $(document).ready(function () {
                         createWorkPlanForm.style.display = "none";
                         deleteWorkPlanForm.style.display = "block";
                     } else {
-                        alert("Such trajectory is already added");
+                        throwErrorAlert("Траєкторія вже додана.");
                     }
 
                     removeSelectInteraction();
                 },
                 error: function (response) {
                     console.log(response);
-                    alert("Add failed with response: " + response);
+                    throwErrorAlert("Додавання не вдалося з повідомленням: " + response);
                 }
             })
                 .done(function (data) {
                     turnOverlayOff();
                 });
         } else {
-            alert("Some fields aren't filled. Please, fill all the requsted fields.");
+            throwErrorAlert("Деякі поля не заповнені.");
         }
 
         event.preventDefault();
@@ -1155,7 +1155,7 @@ $(document).ready(function () {
                 console.log(err);
             });
         } else {
-            alert("No work plan was chosen");
+            throwErrorAlert("Робочий план не вибрано.");
         }
 
         event.preventDefault();

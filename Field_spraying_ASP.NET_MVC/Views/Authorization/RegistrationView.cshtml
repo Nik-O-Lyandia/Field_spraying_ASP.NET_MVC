@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Registration";
+}
+
+<script src="~/js/registration_script.js"></script>
+<link rel="stylesheet" href="~/css/login-registration_style.css" type="text/css" />
+
+<div class="container login-reg">
+    <h2 class="text-center mb-4">Реєстрація</h2>
+
+    <form id="registrationForm">
+        <div class="form-group mb-3">
+            <label for="username" class="form-label">Ім'я:</label>
+            <input type="text" id="username" name="username" class="form-control" required />
+        </div>
+        <div class="form-group mb-3">
+            <label for="password" class="form-label">Пароль:</label>
+            <input type="password" id="password" name="password" class="form-control" required />
+        </div>
+        <div class="form-group mb-3">
+            <label for="password" class="form-label">Повтор пароля:</label>
+            <input type="password" id="verification-password" name="verification-password" class="form-control" required />
+        </div>
+        <div>
+            <button type="button" onclick="registerUser()" class="btn btn-success">Зареєструватися</button>
+            <button type="button" onclick="goToLogin()" class="btn btn-secondary">Назад</button>
+        </div>
+    </form>
+</div>

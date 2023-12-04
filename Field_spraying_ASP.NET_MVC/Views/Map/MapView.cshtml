@@ -13,9 +13,9 @@
     <div class="col-lg-4">
         <nav>
             <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                <button class="nav-link active" id="nav-draw-tab" data-bs-toggle="tab" data-bs-target="#nav-draw" type="button" role="tab" aria-controls="nav-draw" aria-selected="true">Draw</button>
-                <button class="nav-link" id="nav-management-tab" data-bs-toggle="tab" data-bs-target="#nav-management" type="button" role="tab" aria-controls="nav-management" aria-selected="false">Management</button>
-                <button class="nav-link" id="nav-work-start-tab" data-bs-toggle="tab" data-bs-target="#nav-work-start" type="button" role="tab" aria-controls="nav-work-start" aria-selected="false">Work start</button>
+                <button class="nav-link active" id="nav-draw-tab" data-bs-toggle="tab" data-bs-target="#nav-draw" type="button" role="tab" aria-controls="nav-draw" aria-selected="true">Малювання</button>
+                <button class="nav-link" id="nav-management-tab" data-bs-toggle="tab" data-bs-target="#nav-management" type="button" role="tab" aria-controls="nav-management" aria-selected="false">Керування</button>
+                <button class="nav-link" id="nav-work-start-tab" data-bs-toggle="tab" data-bs-target="#nav-work-start" type="button" role="tab" aria-controls="nav-work-start" aria-selected="false">Робочі плани</button>
             </div>
         </nav>
 
@@ -23,43 +23,39 @@
 
             <div class="tab-pane fade show active" id="nav-draw" role="tabpanel" aria-labelledby="nav-draw-tab">
 
-                <button id="draw-polygon-btn" type="button" class="btn btn-primary">Draw area</button>
-                <button id="draw-point-btn" type="button" class="btn btn-primary">Add loading point</button>
+                <button id="draw-polygon-btn" type="button" class="btn btn-success">Додати область</button>
+                <button id="draw-point-btn" type="button" class="btn btn-success">Додати точку завантаження</button>
+                <img src="/data/info-icon-320x320-white.png" width="20" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Вибір цих опцій вмикає режим малювання на мапі" />
                 <hr />
-                <button id="undo-btn" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24" />Undo last</button>
+                <button id="undo-btn" type="button" class="btn btn-primary"><img src="~/data/undo_symbol.png" width="24" height="24" />Відминити останнє</button>
+                <button id="cancel-draw-btn" type="button" class="btn btn-primary">Відмінити додавання</button>
+                <img src="/data/info-icon-320x320-white.png" width="20" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Відмінити останнє – відміняє останню дію (наприклад, видаляє останню додану точку полігона).&#010;&#010;Відмінити додавання – вихід з режиму малювання." />
                 <hr />
-                <button id="cancel-draw-btn" type="button" class="btn btn-primary">Cancel drawing</button>
-                <hr />
-                <button id="clear-all-new-btn" type="button" class="btn btn-primary">Clear all new</button>
-                <hr />
-                <button id="clear-last-feature-btn" type="button" class="btn btn-primary">Clear last added</button>
-                <hr />
-                <button id="set-loading-point-btn" type="button" class="btn btn-primary">Set loading point</button>
-
+                <button id="clear-last-feature-btn" type="button" class="btn btn-secondary">Прибрати останню додану фігуру</button>
+                <button id="clear-all-new-btn" type="button" class="btn btn-danger">Прибрати усі нові фігури</button>
+                <img src="/data/info-icon-320x320-white.png" width="20" height="20" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Прибрати останню додану фігуру – видаляє з мапи останню фігуру (область чи точку), яка була додана.&#010;&#010;Прибрати усі нові фігури – видаляє з мапи усі фігури, які були додані в поточному сеансі та не були збережені." />
             </div>
 
             <div class="tab-pane fade" id="nav-management" role="tabpanel" aria-labelledby="nav-management-tab">
 
-                <button id="import-btn" type="button" class="btn btn-primary">Import area</button>
-                <hr />
-                <button id="management-select-btn" type="button" class="btn btn-primary">Select area</button>
+                <button id="management-select-btn" type="button" class="btn btn-primary">Обрати фігури</button>
                 <hr />
                 <form id="export-form" action="/Map/Export" style="display: none">
 
                     <div id="area-name-group" class="form-group" style="display: none">
-                        <label for="area-name" class="form-label">Area name:</label>
+                        <label for="area-name" class="form-label">Назва робочої області:</label>
                         <input type="text" class="form-control" id="area-name" name="area-name" placeholder="area_1" />
                     </div>
 
                     <div id="point-name-group" class="form-group" style="display: none">
-                        <label for="point-name" class="form-label">Loading point name:</label>
+                        <label for="point-name" class="form-label">Назва точки завантаження:</label>
                         <input type="text" class="form-control" id="point-name" name="point-name" placeholder="point_1" />
                     </div>
 
-                    <button type="submit" id="export-btn" class="btn btn-success">Export</button>
+                    <button type="submit" id="export-btn" class="btn btn-success">Зберегти</button>
                 </form>
-                <hr />
-                <button id="delete-feature-btn" type="button" class="btn btn-primary" style="display: none">Delete feature</button>
+                <br />
+                <button id="delete-feature-btn" type="button" class="btn btn-danger" style="display: none">Видалити виділене</button>
 
             </div>
 
@@ -89,7 +85,7 @@
 
                     <div class="form-group">
                         <button type="button" id="update-work-plan-btn" class="btn btn-primary">
-                            Оновити план
+                            Редагувати план
                         </button>
                     </div>
 
@@ -244,7 +240,7 @@
 
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary">
-                            Оновити
+                            Зберегти
                         </button>
                     </div>
 

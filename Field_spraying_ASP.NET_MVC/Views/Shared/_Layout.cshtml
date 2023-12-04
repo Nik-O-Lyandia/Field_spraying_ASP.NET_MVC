@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Field_spraying_ASP.NET_MVC</title>
+    <title>@ViewData["Title"] - AgroDroneGuard</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Field_spraying_ASP.NET_MVC.styles.css" asp-append-version="true" />
@@ -14,20 +14,34 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Field_spraying_ASP.NET_MVC</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Map" asp-action="">AgroDroneGuard</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                <div class="vr"></div>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-light" asp-area="" asp-controller="Map" asp-action="">Мапа</a>
                         </li>
+                        <li class="vr"></li>
                         <li class="nav-item">
-                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link text-light" asp-area="" asp-controller="Drones" asp-action="">Дрони</a>
+                        </li>
+                        <li class="vr"></li>
+                        <li class="nav-item">
+                            <a class="nav-link text-light" asp-area="" asp-controller="Home" asp-action="Privacy">Політика конфіденційності</a>
                         </li>
                     </ul>
+                </div>
+            </div>
+            <div class="bg-image hover-effect dropdown">
+                <img class="dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" src="/data/profile-icon-white.png" width="40" height="40" style="margin: 5px 5px 5px 5px;">
+
+                <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="dropdownMenuButton" id="profile-dropdown-menu">
+                    <!--<a class="dropdown-item" href="/">LogIn</a>-->
+                    <a class="dropdown-item" onclick="logOut()">Вихід</a>
                 </div>
             </div>
         </nav>
@@ -47,6 +61,20 @@
             </div>
         </div>
 
+        <div class="alert-tab">
+            <div class="alert alert-danger" role="alert" id="error-alert" >
+                <strong class="mx-2">Помилка!</strong>
+            </div>
+
+            <div class="alert alert-warning" role="alert" id="warning-alert" >
+                <strong class="mx-2">Попередження!</strong>
+            </div>
+
+            <div class="alert alert-success" role="alert" id="success-alert" >
+                <strong class="mx-2">Успіх!</strong>
+            </div>
+        </div>
+
         <main role="main" class="pb-3 h-100">
             @RenderBody()
         </main>
@@ -54,7 +82,7 @@
 
     <footer class="border-top text-muted">
         <div class="container">
-            &copy; 2023 - Field_spraying_ASP.NET_MVC - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2023 - AgroDroneGuard - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
