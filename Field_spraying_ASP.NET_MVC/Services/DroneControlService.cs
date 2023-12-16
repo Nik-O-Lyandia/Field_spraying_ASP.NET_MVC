@@ -58,7 +58,6 @@ namespace Field_spraying_ASP.NET_MVC.Services
             }
         }
 
-        //public double[] GetCurrentDronePosition(double[] p1, double[] p2)
         public double[] GetCurrentDronePosition(string workPlanName)
         {
             Debug.WriteLine("-----------");
@@ -135,12 +134,6 @@ namespace Field_spraying_ASP.NET_MVC.Services
             }
 
 
-            // Test
-            //double[] lastPoint = p1;
-            //double[] nextPoint = p2;
-
-            //Debug.WriteLine("Time in sec: " + t.TotalSeconds.ToString());
-
             // Braking distance
             double brakingDistance = control.CurrentDroneSpeed * control.CurrentDroneSpeed / (2 * control.a);
 
@@ -187,15 +180,6 @@ namespace Field_spraying_ASP.NET_MVC.Services
             double x = control.CurrentDronePosition[0];
             double y = control.CurrentDronePosition[1];
 
-            //Debug.WriteLine(format: "(x1,y1):\t({0},{1})\n(x2,y2):\t({2},{3})\n(x,y):  \t({4},{5})", x1, y1, x2, y2, x, y);
-            //Debug.WriteLine((x - x2).ToString() + " - " + (y - y2).ToString());
-            //Debug.WriteLine(format: "Index: \t{0}", control.LastTrajectoryPointVisitedIndex);
-            Debug.WriteLine(format: "Speed: \t{0}", control.CurrentDroneSpeed);
-            //Debug.WriteLine(format: "a:\t{0}", control.a);
-            //if ((x2 > x1 && x > x2 && y2 > y1 && y > y2) ||
-                //(x2 > x1 && x > x2 && y2 < y1 && y < y2) ||
-                //(x2 < x1 && x < x2 && y2 > y1 && y > y2) ||
-                //(x2 < x1 && x < x2 && y2 < y1 && y < y2))
             if(Math.Abs(x-x2) < 0.1 && Math.Abs(y - y2) < 0.1)
             {
                 if (isLastSegment)
@@ -206,14 +190,6 @@ namespace Field_spraying_ASP.NET_MVC.Services
                 control.nowBraking = false;
                 control.a = 0 - control.a;
             }
-
-
-            // 3761310,3418307337,  6784133,458554302
-            // 3761321,6691913563,  6784133,335543921
-            // 3761321,546487951,   6784121,979140807
-
-
-            //Debug.WriteLine("CurrentDroneSpeed: " + CurrentDroneSpeed.ToString());
 
             return control.CurrentDronePosition;
         }

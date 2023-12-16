@@ -103,19 +103,3 @@ def checkInside(polygon, p):
 	else:
 		return False
 
-
-# ****************************************
-# 			   USAGE EXAMPLE
-# ****************************************
-# polygon = [ Point( 0, 0 ), Point( 10, 0 ), Point( 10, 10 ), Point( 0, 10 ) ]
-# p = Point( 5, 3 )
-
-# polygon = [(0,0),(10,0),(10,10),(0,10)]
-# p = (5,3)
-# n = len(polygon)
-
-# Function call
-# if (checkInside(polygon, len(polygon), p)):
-# 	print("Point is inside.")
-# else:
-# 	print("Point is outside.")

@@ -90,37 +90,7 @@ def split_angle(polygon: list, points: list, distance, concave_splits: int = 1, 
             end_points.append((endx, endy))
         else:
             end_points = build_reflex_angle(polygon, points, distance, concave_splits)
-
-    # ***********************************************
-    #                  PLOT RESULT
-    # ***********************************************
-
-    # # Unzipping points list for plot
-    # points_unzipped = list(zip(*points))
-    # end_points_unzipped = list(zip(*end_points))
-
-    # # plot the points
-    # fig = plt.figure()
-    # ax = plt.subplot(1,1,1)
-    # ax.set_ylim([min(points_unzipped[1])-50, max(points_unzipped[1])+50])  
-    # ax.set_xlim([min(points_unzipped[0])-50, max(points_unzipped[0])+50])
-    # # ax.set_xlim([min(points_unzipped[0])-50, max(points_unzipped[0]) + max(points_unzipped[1])-min(points_unzipped[1])+50])
-    # for i in range(len(end_points)):
-    #     ax.plot([c_x, end_points[i][0]], [c_y, end_points[i][1]])
     
-    # ax.plot([c_x, points[0][0]], [c_y, points[0][1]])
-    # ax.plot([c_x, points[2][0]], [c_y, points[2][1]])
-    # ax.scatter(points_unzipped[0], points_unzipped[1])
-    # ax.scatter(end_points_unzipped[0], end_points_unzipped[1])
-    # ax.scatter(zero_degree_point[0],zero_degree_point[1])
-
-    # ax.grid(which = "major", linewidth = 1, linestyle = '-')
-    # ax.grid(which = "minor", linewidth = 0.2, linestyle = '--')
-    # ax.minorticks_on()
-
-    # plt.show()
-
-    # print()
     return end_points
 
 
@@ -207,9 +177,3 @@ def build_reflex_angle(polygon:list, points: list, distance, splits: int = 2):
     split_points = split_angle(polygon, [end_point_1,points[1],end_point_2], distance, splits, True)
     
     return [end_point_1] + split_points + [end_point_2]
-
-# ***********************************************
-#                 USAGE EXAMPLE
-# ***********************************************
-# points = [(4,7),(8,8),(7,2)]
-# find_bisector(points)

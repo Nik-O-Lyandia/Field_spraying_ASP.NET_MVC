@@ -192,9 +192,6 @@ def plot_result(features, grid_points_list, distance, bbox):
 
         grid = []
         for grid_row in grid_points:
-            # hex_grid = []
-            # for hex_center in hex_centers:
-            #     hex_grid.append(create_hexagon(edge,hex_center[0],hex_center[1]))
             for center in grid_row:
                 if not center[2] == 1:
                     grid.append(create_square(distance,center[0],center[1]))
@@ -204,24 +201,12 @@ def plot_result(features, grid_points_list, distance, bbox):
                     ax.add_artist( Drawing_uncolored_circle )
 
             ax.set_aspect( 1 )
-            # res = list(zip(*hex_centers))
-            # res_squares = list(zip(*grid_row))
-
-            # hex_grid_unziped = []
-            # for hex in hex_grid:
-            #     hex.append(hex[0])
-            #     hex_grid_unziped.append(list(zip(*hex)))
+            
         grid_unziped = []
         for square in grid:
             square.append(square[0])
             grid_unziped.append(list(zip(*square)))
 
-        # for hex in hex_grid_unziped:
-        #     ax.plot(hex[0],hex[1])
-        # for square in grid_unziped:
-        #     ax.plot(square[0],square[1])
-
-        # ax.scatter(res[0], res[1])
         ax.scatter(res_squares[0], res_squares[1])
 
     xlim_min = bbox[0]

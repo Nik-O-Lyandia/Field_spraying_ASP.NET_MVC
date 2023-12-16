@@ -11,9 +11,6 @@ def get_coverage_trajectory(area_name: str, point_name: str, spraying_radius):
     :area_name: name of the area for which grid would be made.
     '''
 
-    # # Creating the DynamoDB Client
-    # dynamodb_client = boto3.client('dynamodb', endpoint_url='http://localhost:8000')
-
     # Creating the DynamoDB Table Resource
     dynamodb = boto3.resource('dynamodb', endpoint_url='http://localhost:8000')
 
@@ -100,12 +97,4 @@ def get_coverage_trajectory(area_name: str, point_name: str, spraying_radius):
     for p in lonlat_coverage_trajectory:
         wgs_coverage_trajectory.append(transform_lonlat_wgs(p[1],p[0]))
 
-    # print(wgs_coverage_trajectory[:4:])
-
-    # table.put_item(
-    #     Item={
-    #         'year': year,
-    #         'title': title,
-    #         'info': {'plot': plot, 'rating': Decimal(str(rating))}}
-    #         )
     return wgs_coverage_trajectory

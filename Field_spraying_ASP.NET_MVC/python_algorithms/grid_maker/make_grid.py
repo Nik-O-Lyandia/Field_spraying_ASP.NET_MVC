@@ -8,20 +8,12 @@ def make_grid(polygon:list, loading_point: tuple, spraying_radius):
     :spraying_radius: spraying radius of the selected drone.
     '''
 
-    # edge = math.sqrt(10**2/(3/2 * math.sqrt(3)))
     distance = spraying_radius
 
-    # hex_centers, bbox = create_hexgrid(polygon, edge)
-    # print("Creating inner polygon...")
     small_polygon = inner_polygon.create_inner_polygon(polygon, distance, 4)
-    # print("Inner polygon created.")
 
-    # print("Creating grid...")
     grid_centers_coords, bbox, map_np = polygon_grid.create_grid(small_polygon, loading_point, distance)
-    # print("Grid created.")
 
-    # print("Plotting result...")
     # polygon_grid.plot_result([polygon,small_polygon], [grid_centers_coords], distance=distance, bbox=[bbox[0]-100,bbox[1]-100,bbox[2]+100,bbox[3]+100])
-    # print("Plotted.")
 
     return grid_centers_coords, map_np
